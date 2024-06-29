@@ -5,17 +5,17 @@ def read_dat_file(file_path):
         lines = [line.strip() for line in f.readlines()]
         m = int(lines[0])
         n = int(lines[1])
-        l = [int(e) for e in lines[2].split()]
-        s = [int(e) for e in lines[3].split()]
+        L = [int(e) for e in lines[2].split()]
+        S = [int(e) for e in lines[3].split()]
         D = [[int(p) for p in line.split()] for line in lines[4:]]
-    return m, n, l, s, D
+    return m, n, L, S, D
 
 def write_dzn_file(file_path, m, n, l, s, D):
     with open(file_path, 'w') as f:
         f.write(f'm = {m};\n')
         f.write(f'n = {n};\n')
-        f.write(f'l = {l};\n')
-        f.write(f's = {s};\n')
+        f.write(f'L = {l};\n')
+        f.write(f'S = {s};\n')
         f.write('D = [')
         for row in D:
             f.write(f'|')
@@ -29,10 +29,10 @@ def data_to_dzn(in_file_path, out_file_path):
         dzn_file = f'{out_file_path}/inst{index}.dzn'
         
         # Read and parse .dat file
-        m, n, l, s, D = read_dat_file(dat_file)
+        m, n, L, S, D = read_dat_file(dat_file)
         
         # Write to .dzn file
-        write_dzn_file(dzn_file, m, n, l, s, D)
+        write_dzn_file(dzn_file, m, n, L, S, D)
 
 if __name__ == '__main__':
     in_file_path = '../../Instances'  # Data folder in the repository
