@@ -14,15 +14,6 @@ L = list(map(int, lines[2].split())) # Maximum load of each courier
 S = list(map(int, lines[3].split())) # Size of each item
 D = [list(map(int, line.split())) for line in lines[4:]] # Distance matrix
 
-""" # Define variables: x[i, j] is the amount shipped from supplier i to consumer j
-x = {(i, j): model.add_var(name=f"x_{i}_{j}") for i in m for j in n}
-
-# % Each item should delivered
-for i in range(1, n + 1):
-    model += xsum(x[k, i, j] for k in range(m) for j in range(n + 1)) == 1, f"delivery_{i}" """
-
-# x[i, j1, j2] is 1 if the courier i travels from node j1 to node j2
-x = model.add_var_tensor((m, n + 1, n + 1), var_type=BINARY, name="x")
 
 model.optimize()
 
