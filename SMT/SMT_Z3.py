@@ -76,9 +76,8 @@ def SMT(m, n, l, s, D, sym_breaking=False):
   # the number of items that are delivered by each courier
   count = [Int(f'count_{i}') for i in COURIERS]
 
-  #solver = Solver()
-  solver = Optimize()
-  solver.set("timeout", 300000)
+  solver = Solver()
+
   ####################################### CONSTRAINTS #######################################
 
   # Assignment Constraint
@@ -93,7 +92,7 @@ def SMT(m, n, l, s, D, sym_breaking=False):
     solver.add(Sum([If(X[i][j] > 0, s[j], 0) for j in ITEMS]) <= l[i])
 
   for i in COURIERS:  # For each courier
-    # Calculate the number of assigned items (`c`) for courier `i`
+    # Calculate the number of assigned items (c) for courier i
     c = Sum([If(X[i][j] > 0, 1, 0) for j in ITEMS])
     solver.add(count[i] == c)
     # Distance from origin to the first item in the route
@@ -108,10 +107,10 @@ def SMT(m, n, l, s, D, sym_breaking=False):
     # Distance from the last item in the route back to the origin
     dist_end = Sum([If(X[i][j] == c, D[j][n], 0) for j in ITEMS])
 
-    # Total distance expression for courier `i`
+    # Total distance expression for courier i
     dist_expr = dist_start + dist_consecutive + dist_end
 
-    # Add the constraint for the total distance of courier `i`
+    # Add the constraint for the total distance of courier i
     solver.add(dist[i] == dist_expr)
 
   for i in COURIERS:
@@ -133,41 +132,30 @@ def SMT(m, n, l, s, D, sym_breaking=False):
   ######################################## SEARCH STRATEGY ########################################
 
   lower_bound_distance = max([D[n][j] + D[j][n] for j in ITEMS])
-  #solver.add(obj >= lower_bound_distance)
-  solver.minimize(obj)
-  ############################################# SOLVE #############################################
+  solver.add(obj >= lower_bound_distance)
 
+  ############################################# SOLVE #############################################
+  solver.set("timeout", 300000)
   time_generation = time() - start_time
 
-  final_value = 0
-  result_X_final = []
   if solver.check() != sat:
     print ("failed to solve")
     return None, None, None
-  else:
+
+  final_value = 0
+  result_X_final = []
+  while (solver.check() == sat) and (300 >= (time() - start_time)):
+
     model = solver.model()
     result_X = [ [ model.evaluate(X[i][j]) for j in ITEMS ]
             for i in COURIERS ]
     result_dist = [model.evaluate(dist[i]) for i in COURIERS]
     result_objective = model.evaluate(obj)
+
     result_X_final = result_X
 
     final_value = result_objective
-
-  #final_value = 0
-  #result_X_final = []
-  #while (solver.check() == sat) and (300 >= (time() - start_time)):
-
-    #model = solver.model()
-    #result_X = [ [ model.evaluate(X[i][j]) for j in ITEMS ]
-     #       for i in COURIERS ]
-    #result_dist = [model.evaluate(dist[i]) for i in COURIERS]
-    #result_objective = model.evaluate(obj)
-
-    #result_X_final = result_X
-
-    #final_value = result_objective
-    #solver.add(obj < result_objective)
+    solver.add(obj < result_objective)
 
   final_time = (time() - time_generation - start_time)
 
