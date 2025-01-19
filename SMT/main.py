@@ -12,7 +12,7 @@ models = [ "SMT_NO_SYM",
 
 def main():
 
-  for instance_num in range(10):
+  for instance_num in range(21):
     final_result_dict = {}
     print(f"instance : {instance_num + 1}")
     for model in models:
