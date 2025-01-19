@@ -1,6 +1,6 @@
 {
  "SMT_NO_SYM": {
-  "time": 0,
+  "time": 1,
   "optimal": true,
   "obj": 14,
   "sol": [
@@ -17,7 +17,7 @@
   ]
  },
  "SMT_SYM": {
-  "time": 0,
+  "time": 2,
   "optimal": true,
   "obj": 14,
   "sol": [
