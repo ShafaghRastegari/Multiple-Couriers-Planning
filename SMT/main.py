@@ -46,6 +46,7 @@ def main():
           not_optimal_flag=True
 
         if len(shared_list) == 0:
+          print("shared_list in None...............")
           final_result_dict[model]["time"] = 300
           final_result_dict[model]["optimal"] = False
           final_result_dict[model]["obj"] = None
@@ -55,8 +56,8 @@ def main():
 
           if not_optimal_flag:
             optimal = False
-          if final_time is None or (not optimal):
             final_time = 300
+            
           final_result_dict[model]["time"] = int(final_time)
           final_result_dict[model]["optimal"] = optimal
           final_result_dict[model]["obj"] = final_value

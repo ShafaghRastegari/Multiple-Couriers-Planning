@@ -127,6 +127,7 @@ def SMT(shared_list, m, n, l, s, D, sym_breaking=False):
 
     courier_path = courier_path_from_result(result_count_final, result_X_final
                                             , COURIERS, ITEMS)
-
     shared_list.append((courier_path, final_value.as_long(), final_time, optimal))
+
+    print(f"shared_list length : {len(shared_list)}")
     #return courier_path, final_value, final_time, optimal
