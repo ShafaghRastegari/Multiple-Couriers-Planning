@@ -1,69 +1,16 @@
 from z3 import *
 import numpy as np
 from time import time
-import json
+from utils import *
 
-models = [ "SMT_NO_SYM",
-           "SMT_SYM",
-          ]
+def SMT(shared_list, m, n, l, s, D, sym_breaking=False):
 
-def maximum(x):
-    m = x[0]
-    for v in x[1:]:
-        m = If(v > m, v, m)
-    return m
-
-def run_model_on_instance(file):
-    with open(file) as f:
-      m = int(next(f)) # couriers
-      n = int(next(f)) # items
-      l = [int(e) for e in next(f).split()] # capacities
-      s = [int(e) for e in next(f).split()] # max size of packages a courier can carry
-      D = np.genfromtxt(f, dtype=int).tolist() # Distances
-    return m, n, l, s, D
-
-def add_sb_constraints(m, n, l, s, D, solver, X):
-  # Add capacity-based symmetry-breaking constraints
-  couriers_by_capacity = {}
-  for idx, capacity in enumerate(l):
-      if capacity not in couriers_by_capacity:
-          couriers_by_capacity[capacity] = []
-      couriers_by_capacity[capacity].append(idx)
-
-  # Enforce symmetry-breaking constraints for couriers with identical capacities
-  for capacity, courier_indices in couriers_by_capacity.items():
-      for i in range(len(courier_indices) - 1):
-          courier_1, courier_2 = courier_indices[i], courier_indices[i + 1]
-          for item in range(n):
-              # If courier_1 is assigned an item, then courier_2 cannot be assigned to the same item
-              q = If(X[courier_1][item] > 0, True, False)
-              p = If(X[courier_2][item] > 0, True, False)
-              solver.add(Implies(q, Not(p)))
-
-  # Symmetry-breaking constraints using cumulative load ordering
-  for capacity, courier_indices in couriers_by_capacity.items():
-    if len(courier_indices) > 1:
-      for i in range(len(courier_indices) - 1):
-        courier_1, courier_2 = courier_indices[i], courier_indices[i + 1]
-        temp_1 = []
-        temp_2 = []
-        for j in range(n):
-          temp_1.append(If(X[courier_1][j] > 0, True, False))
-          temp_2.append(If(X[courier_2][j] > 0, True, False))
-        load_1 = Sum([If(temp_1[j], s[j], 0) for j in range(n)])
-        load_2 = Sum([If(temp_2[j], s[j], 0) for j in range(n)])
-        solver.add(load_1 <= load_2)  # Enforce increasing load order
-
-def SMT(m, n, l, s, D, sym_breaking=False):
-
-  timeout = 300 # in seconds
   start_time = time()
 
   COURIERS = range(m)
   ITEMS = range(n)
 
   ####################################### DECISION VARIABLES #######################################
-
   # main decision variable: x[i,j] = k mean that the i-th courier is in j at time k
   X = [[Int(f'X_{i}_{j}') for j in ITEMS]for i in COURIERS]
 
@@ -77,7 +24,6 @@ def SMT(m, n, l, s, D, sym_breaking=False):
   count = [Int(f'count_{i}') for i in COURIERS]
 
   solver = Solver()
-
   ####################################### CONSTRAINTS #######################################
 
   # Assignment Constraint
@@ -89,12 +35,15 @@ def SMT(m, n, l, s, D, sym_breaking=False):
 
   # Load Constraint
   for i in COURIERS:
-    solver.add(Sum([If(X[i][j] > 0, s[j], 0) for j in ITEMS]) <= l[i])
+    load[i] = Sum([If(X[i][j] > 0, s[j], 0) for j in ITEMS])
+    solver.add(load[i] <= l[i])
 
   for i in COURIERS:  # For each courier
     # Calculate the number of assigned items (c) for courier i
-    c = Sum([If(X[i][j] > 0, 1, 0) for j in ITEMS])
-    solver.add(count[i] == c)
+
+    count[i] = Sum([If(X[i][j] > 0, 1, 0) for j in ITEMS])
+
+    #solver.add(count[i] == c)
     # Distance from origin to the first item in the route
     dist_start = Sum([If(X[i][j] == 1, D[n][j], 0) for j in ITEMS])
 
@@ -105,18 +54,19 @@ def SMT(m, n, l, s, D, sym_breaking=False):
     ])
 
     # Distance from the last item in the route back to the origin
-    dist_end = Sum([If(X[i][j] == c, D[j][n], 0) for j in ITEMS])
+    dist_end = Sum([If(X[i][j] == count[i], D[j][n], 0) for j in ITEMS])
 
     # Total distance expression for courier i
     dist_expr = dist_start + dist_consecutive + dist_end
 
     # Add the constraint for the total distance of courier i
-    solver.add(dist[i] == dist_expr)
+    dist[i] = dist_expr
 
   for i in COURIERS:
     for j in ITEMS:
       solver.add(And(X[i][j] >= 0, X[i][j] <= count[i]))
 
+  # Each items that is delivered in different time(k) by i th couriesr
   for i in COURIERS:
     items = [If(X[i][j] > 0, X[i][j], -j) for j in ITEMS]
     solver.add(Distinct(items))
@@ -127,29 +77,44 @@ def SMT(m, n, l, s, D, sym_breaking=False):
   ####################################### OBJECTIVE FUNCTION ######################################
 
   obj = Int('obj')
-  solver.add(obj == maximum([dist[i] for i in COURIERS]))
+  obj = maximum([dist[i] for i in COURIERS])
 
-  ######################################## SEARCH STRATEGY ########################################
+  ######################################## LOWER AND UPPER BOUNDS ########################################
 
+  max_distances = [max(D[i][:-1]) for i in ITEMS]
+  # print(f"before sort : {max_distances}")
+  max_distances.sort()
+  # print(f"after sort : {max_distances}")
+  upper_bound = sum(max_distances[m:]) + max(D[n]) + max([D[j][n] for j in ITEMS])
   lower_bound_distance = max([D[n][j] + D[j][n] for j in ITEMS])
+
+
   solver.add(obj >= lower_bound_distance)
+  solver.add(obj <= upper_bound)
+
+  #print(lower_bound_distance)
 
   ############################################# SOLVE #############################################
   solver.set("timeout", 300000)
   time_generation = time() - start_time
+  print(f"generation time :{time_generation}")
+  final_value = 0
+  result_X_final = []
+  result_count_final = []
+  final_time = 0
+  optimal = True
 
   if solver.check() != sat:
     print ("failed to solve")
-    return None, None, None
-
-  final_value = 0
-  result_X_final = []
-  while (solver.check() == sat) and (300 >= (time() - start_time)):
-
+    shared_list.append((None, None, None, False))
+    #return None, None, None, False
+  while (solver.check() == sat):
+    print(f"solving time :{time() - start_time}")
     model = solver.model()
     result_X = [ [ model.evaluate(X[i][j]) for j in ITEMS ]
             for i in COURIERS ]
     result_dist = [model.evaluate(dist[i]) for i in COURIERS]
+    result_count = [model.evaluate(count[i]) for i in COURIERS]
     result_objective = model.evaluate(obj)
 
     result_X_final = result_X
@@ -157,49 +122,11 @@ def SMT(m, n, l, s, D, sym_breaking=False):
     final_value = result_objective
     solver.add(obj < result_objective)
 
-  final_time = (time() - time_generation - start_time)
+    result_count_final = result_count
+    final_time = (time() - time_generation - start_time)
 
-  courier_path = []
-  for i in COURIERS:
-    temp = []
-    for j in ITEMS:
-      if result_X_final[i][j].as_long() > 0:
-        temp.append(j + 1)
-    courier_path.append(temp)
-  return courier_path, final_value, final_time
+    courier_path = courier_path_from_result(result_count_final, result_X_final
+                                            , COURIERS, ITEMS)
 
-for instance_num in range(10):
-  final_result_dict = {}
-  print(f"instance : {instance_num + 1}")
-  for model in models:
-    sym = None
-    final_result_dict[model] = {}
-    if model == "SMT_NO_SYM":
-      sym = False
-    else:
-      sym = True
-    #print(f"sym breaking: {sym}")
-    courier_path, final_value, final_time = SMT(*run_model_on_instance(f"../Instances/inst0{instance_num+1}.dat" if instance_num < 9 else f"../Instances/inst{instance_num+1}.dat"),
-                                                sym_breaking=sym)
-    if courier_path is None:
-      #print("No solution found")
-      final_result_dict[model]["time"] = 300
-      final_result_dict[model]["optimal"] = False
-      final_result_dict[model]["obj"] = None
-      final_result_dict[model]["sol"] = None
-    else:
-      if final_time is None:
-        final_time = 300
-      final_result_dict[model]["time"] = int(final_time)
-      final_result_dict[model]["optimal"] = True if 300 > final_time else False
-      final_result_dict[model]["obj"] = final_value.as_long()
-      final_result_dict[model]["sol"] = courier_path
-
-      #for i in range(len(courier_path)):
-      #  print_matrix(courier_path[i])
-      #print()
-      #print(f"\n\nFinal objective: {final_value}")
-      #print(f"Finished in: {final_time:.3} seconds\n")
-    print("finished")
-  with open(f'../res/SMT/{instance_num+1}.json', 'w') as f:
-    json.dump(final_result_dict, f, indent=1)
+    shared_list.append((courier_path, final_value.as_long(), final_time, optimal))
+    #return courier_path, final_value, final_time, optimal
