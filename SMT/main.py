@@ -12,7 +12,7 @@ models = [ "SMT_NO_SYM",
 
 def main():
 
-  for instance_num in range(21):
+  for instance_num in range(10):
     final_result_dict = {}
     print(f"instance : {instance_num + 1}")
     for model in models:
@@ -29,8 +29,8 @@ def main():
         # Create a Process to run the target function
         process = multiprocessing.Process(target=SMT,
                                           args=(shared_list,
-                                                *run_model_on_instance((f"../Instances/inst0{instance_num+1}.dat"
-                                                  if instance_num < 9 else f"../Instances/inst{instance_num+1}.dat")), sym))
+                                                *run_model_on_instance((f"./Instances/inst0{instance_num+1}.dat"
+                                                  if instance_num < 9 else f"./Instances/inst{instance_num+1}.dat")), sym))
 
         # Start the process
         process.start()
@@ -63,7 +63,7 @@ def main():
           final_result_dict[model]["sol"] = courier_path
 
         print("finished")
-      with open(f'../res/SMT/{instance_num+1}.json', 'w') as f:
+      with open(f'./res/SMT/{instance_num+1}.json', 'w') as f:
         json.dump(final_result_dict, f, indent=1)
 
 
