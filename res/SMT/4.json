@@ -1,0 +1,14 @@
+{
+ "SMT_NO_SYM": {
+  "time": 300,
+  "optimal": false,
+  "obj": null,
+  "sol": null
+ },
+ "SMT_SYM": {
+  "time": 300,
+  "optimal": false,
+  "obj": null,
+  "sol": null
+ }
+}
