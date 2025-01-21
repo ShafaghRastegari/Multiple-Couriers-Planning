@@ -1,1 +1,0 @@
-Results of each optimization approach.
