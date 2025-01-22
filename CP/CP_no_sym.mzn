@@ -24,12 +24,8 @@ array[NODES] of int: demand = [
 array[1..n+1, 1..n+1] of int: D; % distance matrix
 
 
-int: low_bound = max(i in ITEMS)(D[n+1,i] + D[i,n+1]); % lower bound for objective function
-int: S_min = min(j in ITEMS)(S[j]);
-int: K_max = max(i in COURIERS)(floor(L[i] / S_min));
-int: D_max_origin = max(j in ITEMS)(D[n+1, j]);
-int: D_max = max(i in ITEMS, j in ITEMS where i != j)(D[i, j]);
-int: up_bound = 2 * D_max_origin + (K_max - 1) * D_max ; % upper bound for objective function
+int: upper_bound;
+int: lower_bound;
 
 /******************************************************************************
  *                              decision variables                            *
@@ -40,7 +36,7 @@ array[NODES] of var NODES: successor;
 array[NODES] of var NODES: predecessor;
 array[NODES] of var COURIERS: courier_route;
 array[NODES] of var LOADS: load;
-array[NODES] of var 0..up_bound: final_dist;
+array[NODES] of var 0..upper_bound: final_dist;
 
 
 
@@ -91,7 +87,7 @@ constraint forall(i in COURIERS)(load[i + n + m] <= L[i]);
 /******************************************************************************
  *                              search and solve                                  *
  ******************************************************************************/
-var low_bound..up_bound: obj;
+var low_bound..upper_bound: obj;
 constraint obj = max(final_dist);
 
 %solve minimize obj;
