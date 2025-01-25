@@ -43,6 +43,10 @@ def SMT(shared_list, m, n, l, s, D, sym_breaking=False):
     # Calculate the number of assigned items (c) for courier i
 
     count[i] = Sum([If(X[i][j] > 0, 1, 0) for j in ITEMS])
+    
+    # balance item distribution
+    max_item = int(n / m) + 1
+    solver.add(count[i] <= max_item)
 
     #solver.add(count[i] == c)
     # Distance from origin to the first item in the route
@@ -133,6 +137,7 @@ def SMT(shared_list, m, n, l, s, D, sym_breaking=False):
 
     courier_path = courier_path_from_result(result_count_final, result_X_final
                                             , COURIERS, ITEMS)
+    print(f"obj : {final_value}")
     shared_list.append((courier_path, final_value.as_long(), final_time, optimal))
 
     print(f"shared_list length : {len(shared_list)}")
