@@ -1,6 +1,7 @@
 from z3 import *
 import numpy as np
 from time import time
+from SMT.utils import *
 from utils import *
 
 def SMT(shared_list, m, n, l, s, D, sym_breaking=False):
@@ -85,9 +86,14 @@ def SMT(shared_list, m, n, l, s, D, sym_breaking=False):
   # print(f"before sort : {max_distances}")
   max_distances.sort()
   # print(f"after sort : {max_distances}")
-  upper_bound = sum(max_distances[m:]) + max(D[n]) + max([D[j][n] for j in ITEMS])
-  lower_bound_distance = max([D[n][j] + D[j][n] for j in ITEMS])
-
+  
+  #upper_bound = sum(max_distances[m:]) + max(D[n]) + max([D[j][n] for j in ITEMS])
+  upper_bound = calculate_upper_bound(m, n, l, s, D)
+  
+  # lower_bound_distance = max([D[n][j] + D[j][n] for j in ITEMS])
+  lower_bound_distance = calculate_lower_bound(n, D)
+  print(f"lower bound distance : {lower_bound_distance}")
+  print(f"upper bound distance : {upper_bound}")
 
   solver.add(obj >= lower_bound_distance)
   solver.add(obj <= upper_bound)
