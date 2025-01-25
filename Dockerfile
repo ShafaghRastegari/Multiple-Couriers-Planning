@@ -1,17 +1,24 @@
-# Use the multi-platform MiniZinc base image
-FROM minizinc/minizinc:latest
+# Use the official MiniZinc image as a base
+FROM minizinc/minizinc:2.8.7-jammy
 
-# Install Python 3, pip, and venv
+# Install Python
 RUN apt-get update && \
-    apt-get install -y python3 python3-pip 
+    apt-get install -y python3 python3-pip python3-venv
 
-# Copy your entire project directory into the container
-COPY . /project
+# Create a virtual environment in /app/venv
+RUN python3 -m venv /app/venv
 
-# Set the working directory
-WORKDIR /project
+# Set the virtual environment path in the environment
+ENV PATH="/app/venv/bin:$PATH"
 
-RUN pip install -r requirements.txt
+# Set the working directory in the container
+WORKDIR /app
 
-# Define the entrypoint
-CMD python3 solver.py -a smt -n 13 && python3 solver.py -a cp 
+# Copy local files to the container
+COPY . /app
+
+# Install dependencies
+RUN pip install -r /app/requirements.txt
+
+# Default command: Open a bash shell (can be changed as needed)
+CMD ["bash"]
