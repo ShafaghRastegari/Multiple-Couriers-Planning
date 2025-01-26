@@ -7,9 +7,11 @@ import time as t
 
 def SAT_function(num_instance):
 
+    range_value = 21 if num_instance == 0 else num_instance
+
     search = ["linear", "binary"]
     symb = [False, True]
-    for i in range(num_instance):
+    for i in range(range_value):
         index = i + 1
 
         if index < 10:
