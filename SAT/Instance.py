@@ -3,6 +3,7 @@ import itertools
 import numpy as np
 import os
 import json
+from utils import *
 
 class Instance:
     def __init__(self, m, n, l, s, D):
@@ -21,8 +22,8 @@ class Instance:
         n = self.n
         m = self.n
         D = self.D
-        lower_bound = max([D[n][j] + D[j][n] for j in range(n)])
-        
+        # lower_bound = max([D[n][j] + D[j][n] for j in range(n)])
+        lower_bound = calculate_lower_bound(n, D)
         return lower_bound
         
     
@@ -31,14 +32,16 @@ class Instance:
         D = self.D
         n = self.n
         m = self.m
-        max_distances = [max(D[i][:-1]) for i in range(n)]
-        max_distances.sort()
-        upper_bound = sum(max_distances[m:]) + max(D[n]) + max([D[j][n] for j in range(n)])
+        # max_distances = [max(D[i][:-1]) for i in range(n)]
+        # max_distances.sort()
+        # upper_bound = sum(max_distances[n-n//m:]) + max(D[n]) + max([D[j][n] for j in range(n)])
 
         '''upper_bound = [D[n][i] + D[i][n] for i in range(n)]  # Compute values
         upper_bound.sort(reverse=True)
         upper_bound = sum(upper_bound[:n-m+1])'''
         #upper_bound = self.lower_bound * (n- m + 1)
+
+        upper_bound = calculate_upper_bound(m, n, self.l, self.s, D)
 
         return upper_bound
 

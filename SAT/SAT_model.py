@@ -1,9 +1,9 @@
 import math
-from SAT_project.Instance import *
+from SAT.Instance import *
 #from SAT.src.SAT_utils import *
 #from constants import *
 from z3.z3 import *
-from SAT_project.utils_SAT import *
+from SAT.utils_SAT import *
 import time as T
 
 def sat_solver1(instance, solver, timeout, pre_time, strategy="", sym_breaking=False):

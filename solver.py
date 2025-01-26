@@ -3,6 +3,7 @@ import importlib
 import sys
 import os
 from SMT.SMT_handler import SMT_handler
+from SAT.SAT_handler import SAT_function
 
 def main():
     # Add the project directory to sys.path
@@ -47,10 +48,10 @@ def main():
             return
         
     elif args.approach.lower() == "sat":
-        pass
+        SAT_function(num_instance=args.num_instance)
 
     elif args.approach.lower() == "smt":
-        SMT_handler(num_instance=args.num_instance)#, model=args.model)
+        SMT_handler(num_instance=args.num_instance)
 
     elif args.approach.lower() == "mip":
         pass

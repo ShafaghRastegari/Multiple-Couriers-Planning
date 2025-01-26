@@ -1,23 +1,22 @@
 import os
-
-from Instance import Instance
+from SAT.Instance import Instance
 import json
-from SAT_model import *
+from SAT.SAT_model import *
 from z3.z3 import *
 import time as t
 
-def sat(instance_num):
+def SAT_function(num_instance):
 
     search = ["linear", "binary"]
     symb = [False, True]
-    for i in range(instance_num):
+    for i in range(num_instance):
         index = i + 1
 
         if index < 10:
             index = "0" + str(index)
         else:
             index = str(index)
-        path = "instance" + f"/inst{index}.dat"
+        path = os.path.join(f"./Instances",f"inst{index}.dat")
         solver = Solver()
         solver.set('timeout', 300 * 1000)
         start_time = t.time()
