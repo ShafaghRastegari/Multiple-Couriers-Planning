@@ -1,12 +1,11 @@
 import math
 from SAT.Instance import *
-#from SAT.src.SAT_utils import *
-#from constants import *
 from z3.z3 import *
 from SAT.utils_SAT import *
 import time as T
 
-def sat_solver1(instance, solver, timeout, pre_time, strategy="", sym_breaking=False):
+def sat_solver(shared_list, instance, timeout, pre_time, strategy="", sym_breaking=False):
+    solver = Solver()
     solver.set('timeout', timeout * 1000)
     variables = constraints(instance, solver, sym_breaking)
     a, t, distance, w, encode_time = variables
@@ -18,7 +17,9 @@ def sat_solver1(instance, solver, timeout, pre_time, strategy="", sym_breaking=F
     time = time_search + encode_time + pre_time
     print(f"time search:{time_search}, encode time:{encode_time}, pre_time: {pre_time}")
     print("Time from beginning of the computation:", np.round(time, 2), "seconds")
-    return time, optimal, obj, sol
+
+    shared_list.append((time, optimal, obj, sol))
+
 
 def search_optimize(instance, strategy, variables, solver, timeout):
     if strategy == "linear":
@@ -78,6 +79,10 @@ def linear_search(solver, instance, variables, timeout):
     flag = True
     count = 0
     time_flag = 0
+    upper_bound_bin = int_to_binary(upper_bound, num_bits(upper_bound), BoolVal)
+    solver.add(All_Less_bin(distances, upper_bound_bin))
+    lower_bound_bin = int_to_binary(lower_bound, num_bits(lower_bound), BoolVal)
+    solver.add(At_LeastOne_Greater_bin(distances, lower_bound_bin))
     while flag:
         status = solver.check()
         if status == sat:
@@ -153,7 +158,7 @@ def binary_search(solver, instance, variables, timeout):
 
     solver.add(All_Less_bin(distances, upper_bound_bin))
 
-    lower_bound_bin = int_to_binary(lower_bound, max_Distance_Binary, BoolVal)
+    lower_bound_bin = int_to_binary(lower_bound, num_bits(lower_bound), BoolVal)
     solver.add(At_LeastOne_Greater_bin(distances, lower_bound_bin))
     solver.push()
     count = 0
@@ -168,7 +173,7 @@ def binary_search(solver, instance, variables, timeout):
 
         solver.add(All_Less_bin(distances, mid_bin))
 
-        print(f"Trying with bounds: [{lower_bound}, {upper_bound}] and posing obj_val <= {mid}")
+        print(f"Trying with bounds: [{lower_bound}, {upper_bound}] and try obj_val <= {mid}")
 
         current_time = T.time()
         past_time = int(current_time - start_time)
@@ -253,60 +258,78 @@ def constraints(instance, solver, sym_breaking):
     max_weight_Binary = num_bits(sum_s_item)
     max_Distance_Binary = num_bits(instance.upper_bound)
 
+    # a_ij = True indicates that courier i delivers object j
     a = [[Bool(f"a_{i}_{j}") for j in range(n)] for i in range(m)]
+    # x_ijk = 1 indicates that courier i moves from delivery point j to delivery point k in his route
     x = [[[Bool(f"x_{i}_{j}_{k}") for k in range(n + 1)] for j in range(n + 1)] for i in range(m)]
+    # t_jk == 1 iff object j is delivered as k-th in its courier's route
     t = [[Bool(f"deliver_{j}_as_{k}-th") for k in range(n // m + 1)] for j in range(n)]
+    # w_i = binary representation of actual load carried by each courier
     w = [[Bool(f"cl_{i}_{k}") for k in range(max_weight_Binary)] for i in range(m)]
     l_bin = [[BoolVal(b) for b in int_to_binary(l[i], length=num_bits(l[i]))] for i in range(m)]
     s_bin = [[BoolVal(b) for b in int_to_binary(s[j], length=num_bits(s[j]))] for j in range(n)]
+    # flatten D
     flat_D = flatten_matrix(D)
     flat_D_bin = [int_to_binary(e, num_bits(e) if e > 0 else 1, BoolVal) for e in flat_D]
+    #  distances[i] := binary representation of the distance travelled by courier i
     distances = [[Bool(f"dist_bin_{i}_{k}") for k in range(max_Distance_Binary)] for i in range(m)]
 
     if sym_breaking:
+        # sort the list of loads
+        instance.sort_weight()
 
-        solver.add(sort_decreasing(w))
+        # lexicographic ordering between the paths of two couriers with same load capacity
         for i in range(m - 1):
-            solver.add(Implies(equals(w[i], w[i+1]), less(a[i], a[i+1])))
-        '''for i in range(m - 1):
             if l[i] == l[i+1]:
                 solver.add(less(a[i], a[i+1]))
-            else: # l[i] > l[i+1]
-                solver.add(less(w[i+1], w[i]))'''
+            else:
+                # l[i] > l[i+1]
+                solver.add(less(w[i+1], w[i]))
 
+    # Constraint 1: every item is assigned to one and only one courier
     for j in range(n):
         solver.add(exactly_one([a[i][j] for i in range(m)], f"assignment_{j}"))
 
+    # Constraint 2: every courier can't exceed its load capacity
     for i in range(m):
         solver.add(conditional_sum(a[i], s_bin, w[i], f"compute_courier_load_{i}"))
         solver.add(less(w[i], l_bin[i]))
 
+    # Constraint 3: every courier has at least 1 item to deliver
     for i in range(m):
         solver.add(at_least_one(a[i]))
 
+    # Constraint 4: every item is delivered at some time in its courier's route, and only once
     for i in range(n):
         solver.add(exactly_one(t[i], f"time_of_{i}"))
 
+    # Constraint 5
     for i in range(m):
+        # can't leave from j to go to j
         solver.add(And([Not(x[i][j][j]) for j in range(n + 1)]))
-
+        # row j has a 1 iff courier i delivers item j
         for j in range(n):
             solver.add(Implies(a[i][j], exactly_one(x[i][j], f"courier_{i}_leaves_{j}")))
             solver.add(Implies(Not(a[i][j]), allfalse(x[i][j])))
-        solver.add(exactly_one(x[i][n], f"courier_{i}_leaves_origin"))
+        solver.add(exactly_one(x[i][n], f"courier_{i}_leaves_origin")) # courier i leaves from origin
 
+        # column j has a 1 iff courier i delivers object j
         for k in range(n):
             solver.add(Implies(a[i][k], exactly_one([x[i][j][k] for j in range(n + 1)], f"courier_{i}_reaches_{k}")))
             solver.add(Implies(Not(a[i][k]), allfalse([x[i][j][k] for j in range(n + 1)])))
-        solver.add(exactly_one([x[i][j][n] for j in range(n + 1)], f"courier_{i}_returns_to_origin"))
+        solver.add(exactly_one([x[i][j][n] for j in range(n + 1)], f"courier_{i}_returns_to_origin")) #courier i returns to origin
 
+        # use ordering between t_j and t_k in every edge travelled
+        # in order to avoid loops not containing the origin
         for j in range(n):
             for k in range(n):
                 solver.add(Implies(x[i][j][k], consecutive(t[j], t[k])))
             solver.add(Implies(x[i][n][j], t[j][0]))
 
+    # flatten x
     flat_x = [flatten_matrix(x[i]) for i in range(m)]
 
+    # definition of distances using constraints
     for i in range(m):
         solver.add(conditional_sum(flat_x[i], flat_D_bin, distances[i], f"distances_def_{i}"))
 
