@@ -36,6 +36,7 @@ def SAT_function(num_instance):
             D.append([int(x) for x in file.readline().split(" ") if x != "\n" if x != ""])
 
         instance = Instance(m, n, l, s, D)
+        instance.sort_weight()
         pre_process_time = t.time()
         past_time = int((pre_process_time - start_time))
         timeout = 300 - past_time
@@ -43,6 +44,7 @@ def SAT_function(num_instance):
         for strategy in search:
             for sb in symb:
 
+                    optimal_flag = False
                     print(f"=================INSTANCE {index}=================")
                     print(f"Max distance found using {strategy} search", end="")
                     name = ""
@@ -63,10 +65,21 @@ def SAT_function(num_instance):
                             print("Process exceeded 300 seconds, terminating...")
                             process.terminate()
                             process.join()
+                            optimal_flag = True
                         if len(shared_list) == 0:
                             time, optimal, obj, sol = 300, False, "N/A", []
                         else:
-                            time, optimal, obj, sol = shared_list[-1]
+                            time, optimal, obj, sol, distances = shared_list[-1]
+
+                            if optimal_flag:
+                                time = 300
+                                optimal = False
+                                print(f"-----------Objective value: {obj}-----------")
+                                print(f"------------------Routes-----------------")
+                                for courier in range(m):
+                                    print("Origin --> " +
+                                          ' --> '.join([str(node) for node in sol[courier]]) +
+                                          f' --> Origin: travelled {distances[courier]}')
 
                     json_dict[key_dict] = {"time": time, "optimal": optimal, "obj": obj, "sol": sol}
                     print(f"best answer: {obj}")

@@ -160,3 +160,4 @@ def At_LeastOne_Greater_bin(distances, lower_bound_bin):
         clauses.append(less(lower_bound_bin, distances[i]))
 
     return Or(clauses)
+
