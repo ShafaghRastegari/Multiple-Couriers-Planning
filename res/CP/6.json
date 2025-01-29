@@ -1,43 +1,16 @@
 {
-    "CP_sym_gecode": {
+    "CP_sym_chuffed": {
         "time": 0,
         "optimal": true,
         "obj": 322,
         "sol": [
             [
                 1,
-                8
-            ],
-            [
-                2,
+                8,
                 7
             ],
             [
-                3
-            ],
-            [
-                4
-            ],
-            [
-                5
-            ],
-            [
-                6
-            ]
-        ]
-    },
-    "CP_no_sym_gecode": {
-        "time": 0,
-        "optimal": true,
-        "obj": 322,
-        "sol": [
-            [
-                1,
-                8
-            ],
-            [
-                2,
-                7
+                2
             ],
             [
                 3
@@ -80,18 +53,45 @@
             ]
         ]
     },
-    "CP_sym_chuffed": {
+    "CP_sym_gecode": {
         "time": 0,
         "optimal": true,
         "obj": 322,
         "sol": [
             [
                 1,
-                8,
+                8
+            ],
+            [
+                2,
                 7
             ],
             [
-                2
+                3
+            ],
+            [
+                4
+            ],
+            [
+                5
+            ],
+            [
+                6
+            ]
+        ]
+    },
+    "CP_no_sym_gecode": {
+        "time": 0,
+        "optimal": true,
+        "obj": 322,
+        "sol": [
+            [
+                1,
+                8
+            ],
+            [
+                2,
+                7
             ],
             [
                 3

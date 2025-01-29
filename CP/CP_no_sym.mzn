@@ -93,7 +93,7 @@ constraint forall(i in COURIERS)(load[i + n + m] <= L[i]);
 %Symmetry-breaking constraint
 
 %constraint forall(i, j in COURIERS where i < j)(
-%   (L[i] >= L[j] /\ L[j] >= L[i]) -> successor[n + i] < successor[n + j]
+%   (L[i] = L[j]) -> successor[n + i] < successor[n + j]
 %);
 /******************************************************************************
  *                              search and solve                                  *

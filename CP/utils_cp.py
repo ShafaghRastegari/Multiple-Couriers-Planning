@@ -6,7 +6,7 @@ import json
 
 def extract_latest_decision(x_out):
     try:    
-        #Define regex patterns for the decision variables block
+        #define regex patterns for the decision variables block
         vars_pattern = re.compile(
             r"(successor\s*=\s*\[.*?\];\s*"
             r"predecessor\s*=\s*\[.*?\];\s*"
@@ -36,10 +36,10 @@ def extract_latest_decision(x_out):
         latest_init_time = init_time_matches[-1]
         latest_solve_time = solve_time_matches[-1]
 
-        # Determine optimality based on the presence of '=========='
+        #determine optimality based on the presence of '=========='
         optimal = "true" if "==========" in x_out else "false"
 
-        #Format the desired output
+        #format the desired output
         desired_output = (
             f"{latest_vars}\n"
             f"----------\n"
@@ -96,19 +96,19 @@ def process_courier_routes(successor, predecessor, courier_route):
 
 def save_solution(desired_output, instance_number, model_name, solver_name):
     try:
-        # Parse the solution
+        #parse the solution
         successor, predecessor, courier_route = parse_solution(desired_output)
         sorted_paths = process_courier_routes(successor, predecessor, courier_route)
         
         if  sorted_paths != None:
             
-            #Remove the first and last items from each courier's path
+            #remove the first and last items from each courier's path
             processed_sol = {}
             for courier, path in sorted_paths.items():
                 if len(path) > 2:
                     processed_sol[courier] = path[1:-1]
                 else:
-                    #If path has 2 or fewer nodes, removing first and last results in empty list
+                    #if path has 2 or fewer nodes, removing first and last results in empty list
                     processed_sol[courier] = []
 
             #prepare the solution in the required format
@@ -132,7 +132,7 @@ def save_solution(desired_output, instance_number, model_name, solver_name):
             else:
                 time_sec = 300
 
-            # Create the result dictionary
+            #create the result dictionary
             new_result = {
                 f"{model_name}_{solver_name}": {
                     "time": time_sec,
@@ -147,8 +147,8 @@ def save_solution(desired_output, instance_number, model_name, solver_name):
             f"{model_name}_{solver_name}": {
                 "time": 300,
                 "optimal": False ,
-                "obj": "No object found",
-                "sol": "No Solutions found"
+                "obj": "N/A",
+                "sol": []
             }
         }
     except Exception as e:
@@ -156,15 +156,15 @@ def save_solution(desired_output, instance_number, model_name, solver_name):
             f"{model_name}_{solver_name}": {
                 "time": 300,
                 "optimal": False ,
-                "obj": "No object found",
-                "sol": "No Solutions found"
+                "obj": "N/A",
+                "sol": []
             }
         }
 
-   # Get the parent directory of the script's location
+   #get the parent directory of the script's location
     parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    # Define output directory and JSON file path in the parent directory
+    #define output directory and JSON file path in the parent directory
     output_dir = os.path.join(parent_dir, "res", "CP")
     os.makedirs(output_dir, exist_ok=True)
 
