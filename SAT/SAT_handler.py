@@ -14,8 +14,9 @@ def SAT_function(num_instance):
     else:
         start = num_instance
         end = num_instance + 1
-    search = ["linear", "binary"]
+    search = ["linear","binary"]
     symb = [False, True]
+    imp_const = [False, True]
     for i in range(start, end):
         index = i
 
@@ -36,13 +37,13 @@ def SAT_function(num_instance):
             D.append([int(x) for x in file.readline().split(" ") if x != "\n" if x != ""])
 
         instance = Instance(m, n, l, s, D)
-        instance.sort_weight()
         pre_process_time = t.time()
         past_time = int((pre_process_time - start_time))
         timeout = 300 - past_time
         json_dict = {}
         for strategy in search:
-            for sb in symb:
+            for imp in imp_const:
+                for sb in symb:
 
                     optimal_flag = False
                     print(f"=================INSTANCE {index}=================")
@@ -51,12 +52,16 @@ def SAT_function(num_instance):
                     if sb:
                         print(' with sb / ', end= "")
                         name += "_sb"
+                    
+                    if imp:
+                        print(' with imp / ', end= "")
+                        name +="_imp"
 
                     print("\n")
                     key_dict = strategy + name
                     with multiprocessing.Manager() as manager:
                         shared_list = manager.list()
-                        process = multiprocessing.Process(target=sat_solver, args=(shared_list, instance, timeout, past_time, strategy, sb))
+                        process = multiprocessing.Process(target=sat_solver, args=(shared_list, instance, timeout, past_time, strategy, sb, imp))
                         process.start()
 
                         process.join(timeout=timeout)

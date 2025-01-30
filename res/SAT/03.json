@@ -1,1 +1,0 @@
-{"linear": {"time": 1, "optimal": true, "obj": 12, "sol": [[5, 4, 2], [3, 7], [6, 1]]}, "linear_sb": {"time": 1, "optimal": true, "obj": 12, "sol": [[5, 4, 2], [3, 6], [1, 7]]}, "binary": {"time": 1, "optimal": true, "obj": 12, "sol": [[5, 6, 3], [2, 4], [7, 1]]}, "binary_sb": {"time": 1, "optimal": true, "obj": 12, "sol": [[5, 6, 3], [4, 2], [1, 7]]}}

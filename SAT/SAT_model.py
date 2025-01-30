@@ -4,25 +4,26 @@ from z3.z3 import *
 from SAT.utils_SAT import *
 import time as T
 
-def sat_solver(shared_list, instance, timeout, pre_time, strategy="", sym_breaking=False):
+def sat_solver(shared_list, instance, timeout, pre_time, strategy="", sym_breaking=False, implied_constraint = False):
     solver = Solver()
+    set_param("sat.random_seed", 42)
     solver.set('timeout', timeout * 1000)
-    variables = constraints(instance, solver, sym_breaking)
+    variables = constraints(instance, solver, sym_breaking, implied_constraint)
     a, t, distance, w, encode_time = variables
     timeout = int((timeout - encode_time))
     solver.set('timeout', timeout * 1000)
-    time_search, optimal, obj, sol, travel = search_optimize(instance, strategy, variables, solver, timeout, shared_list)
+    time_search, optimal, obj, sol, travel = search_optimize(instance, strategy, variables, solver, timeout, shared_list, implied_constraint)
     time = time_search + encode_time + pre_time
     print(f"time search:{time_search}, encode time:{encode_time}, pre_time: {pre_time}")
     print("Time from beginning of the computation:", np.round(time, 2), "seconds")
     shared_list.append((time, optimal, obj, sol, travel))
 
 
-def search_optimize(instance, strategy, variables, solver, timeout, shared_list):
+def search_optimize(instance, strategy, variables, solver, timeout, shared_list, implied_constraint):
     if strategy == "linear":
-        time, optimal, obj, sol, travel = linear_search(solver, instance, variables, timeout, shared_list)
+        time, optimal, obj, sol, travel = linear_search(solver, instance, variables, timeout, shared_list, implied_constraint)
     elif strategy == "binary":
-        time, optimal, obj, sol, travel = binary_search(solver, instance, variables, timeout, shared_list)
+        time, optimal, obj, sol, travel = binary_search(solver, instance, variables, timeout, shared_list, implied_constraint)
 
     return time, optimal, obj, sol, travel
 
@@ -61,7 +62,7 @@ def display(orders, distances_bin, obj_value, assignments, show = True):
 
     return distances, tot_s
 
-def linear_search(solver, instance, variables, timeout, shared_list):
+def linear_search(solver, instance, variables, timeout, shared_list, implied_constraint):
     start_time = T.time()
     a, t, distances, _, _ = variables
     m = instance.m
@@ -106,6 +107,19 @@ def linear_search(solver, instance, variables, timeout, shared_list):
             solver.push()
 
             solver.add(All_Less_bin(distances, upper_bound_bin))
+            
+            a_eval = [[model.evaluate(a[i][j]) for j in range(n)] for i in range(m)]
+            if implied_constraint:
+                t_eval = [[model.evaluate(t[j][k]) for k in range(n // m + 1)] for j in range(n)]
+            else:
+                t_eval = [[model.evaluate(t[j][k]) for k in range(n)] for j in range(n)]
+                
+            dist_eval = [[model.evaluate(distances[i][b]) for b in range(max_Distance_Binary)] for i in range(m)]
+            distances_1, tot_s = display(t_eval, dist_eval, objective_value, a_eval, False)
+            distances_1, tot_s = instance.invert_sort_weight(distances_1, tot_s)
+            current_time = T.time()
+            past_time = current_time - start_time
+            shared_list.append((int(past_time), optimal, objective_value, tot_s, distances_1))
 
         elif status == unsat:
             if count == 0:
@@ -123,18 +137,14 @@ def linear_search(solver, instance, variables, timeout, shared_list):
             flag = False
             optimal = False
 
-        a_eval = [[model.evaluate(a[i][j]) for j in range(n)] for i in range(m)]
-        t_eval = [[model.evaluate(t[j][k]) for k in range(n // m + 1)] for j in range(n)]
-        dist_eval = [[model.evaluate(distances[i][b]) for b in range(max_Distance_Binary)] for i in range(m)]
-        distances_1, tot_s = display(t_eval, dist_eval, objective_value, a_eval, False)
-        distances_1, tot_s = instance.invert_sort_weight(distances_1, tot_s)
-        current_time = T.time()
-        past_time = current_time - start_time
-        shared_list.append((int(past_time), optimal, objective_value, tot_s, distances_1))
+
 
     model = last_model
     a = [[model.evaluate(a[i][j]) for j in range(n)] for i in range(m)]
-    t = [[model.evaluate(t[j][k]) for k in range(n // m + 1)] for j in range(n)]
+    if implied_constraint:
+        t = [[model.evaluate(t[j][k]) for k in range(n // m + 1)] for j in range(n)]
+    else:
+        t = [[model.evaluate(t[j][k]) for k in range(n)] for j in range(n)]
     dist = [[model.evaluate(distances[i][b]) for b in range(max_Distance_Binary)] for i in range(m)]
     distances, tot_s = display(t, dist, objective_value, a)
     distances, tot_s = instance.invert_sort_weight(distances, tot_s)
@@ -145,7 +155,7 @@ def linear_search(solver, instance, variables, timeout, shared_list):
 
     return int(past_time), optimal, objective_value, tot_s, distances
 
-def binary_search(solver, instance, variables, timeout, shared_list):
+def binary_search(solver, instance, variables, timeout, shared_list, implied_constraints):
     start_time = T.time()
     a, t, distances, _, encode_time = variables
     m = instance.m
@@ -169,6 +179,7 @@ def binary_search(solver, instance, variables, timeout, shared_list):
     solver.push()
     count = 0
     flag = True
+    binary_section = 1
     while lower_bound <= upper_bound and flag:
         if upper_bound - lower_bound <= 1:
             mid = (lower_bound + upper_bound) // 2
@@ -201,9 +212,24 @@ def binary_search(solver, instance, variables, timeout, shared_list):
 
             upper_bound = objective_value - 1
             upper_bound_bin = int_to_binary(upper_bound, num_bits(upper_bound), BoolVal)
+            
+            a_eval = [[model.evaluate(a[i][j]) for j in range(n)] for i in range(m)]
+            if implied_constraints:
+                t_eval = [[model.evaluate(t[j][k]) for k in range(n // m + 1)] for j in range(n)]
+            else:
+                t_eval = [[model.evaluate(t[j][k]) for k in range(n)] for j in range(n)]
+            dist_eval = [[model.evaluate(distances[i][b]) for b in range(max_Distance_Binary)] for i in range(m)]
+            distances_1, tot_s = display(t_eval, dist_eval, objective_value, a_eval, False)
+            distances_1, tot_s = instance.invert_sort_weight(distances_1, tot_s)
+            current_time = T.time()
+            past_time = current_time - start_time
+            shared_list.append((int(past_time), False, objective_value, tot_s, distances_1))
 
         elif status == unsat:
             if count == 0:
+                binary_section = 2
+                
+            if count == 1 and binary_section == 2:
                 print("UNSAT")
                 past_time = int((current_time - start_time))
                 return past_time, False, "N/A", [], []
@@ -221,15 +247,6 @@ def binary_search(solver, instance, variables, timeout, shared_list):
             flag = False
             optimal = False
 
-        a_eval = [[model.evaluate(a[i][j]) for j in range(n)] for i in range(m)]
-        t_eval = [[model.evaluate(t[j][k]) for k in range(n // m + 1)] for j in range(n)]
-        dist_eval = [[model.evaluate(distances[i][b]) for b in range(max_Distance_Binary)] for i in range(m)]
-        distances_1, tot_s = display(t_eval, dist_eval, objective_value, a_eval, False)
-        distances_1, tot_s = instance.invert_sort_weight(distances_1, tot_s)
-        current_time = T.time()
-        past_time = current_time - start_time
-        shared_list.append((int(past_time), False, objective_value, tot_s, distances_1))
-
         solver.pop()
         solver.push()
         solver.add(All_Less_bin(distances, upper_bound_bin))
@@ -238,7 +255,10 @@ def binary_search(solver, instance, variables, timeout, shared_list):
 
     model = last_model
     a = [[model.evaluate(a[i][j]) for j in range(n)] for i in range(m)]
-    t = [[model.evaluate(t[j][k]) for k in range(n // m + 1)] for j in range(n)]
+    if implied_constraints:
+        t = [[model.evaluate(t[j][k]) for k in range(n//m + 1)] for j in range(n)]
+    else:
+        t = [[model.evaluate(t[j][k]) for k in range(n)] for j in range(n)]
     dist = [[model.evaluate(distances[i][b]) for b in range(max_Distance_Binary)] for i in range(m)]
     distances, tot_s = display(t, dist, objective_value, a)
     distances, tot_s = instance.invert_sort_weight(distances, tot_s)
@@ -250,7 +270,7 @@ def binary_search(solver, instance, variables, timeout, shared_list):
     return int(past_time), optimal, objective_value, tot_s, distances
 
 
-def constraints(instance, solver, sym_breaking):
+def constraints(instance, solver, sym_breaking, implied_constraint):
 
     start_time = T.time()
     m = instance.m
@@ -267,7 +287,10 @@ def constraints(instance, solver, sym_breaking):
     # x_ijk = 1 indicates that courier i moves from delivery point j to delivery point k in his route
     x = [[[Bool(f"x_{i}_{j}_{k}") for k in range(n + 1)] for j in range(n + 1)] for i in range(m)]
     # t_jk == 1 iff object j is delivered as k-th in its courier's route
-    t = [[Bool(f"deliver_{j}_as_{k}-th") for k in range(n // m + 1)] for j in range(n)]
+    if implied_constraint:
+        t = [[Bool(f"deliver_{j}_as_{k}-th") for k in range(n // m + 1)] for j in range(n)]
+    else:
+        t = [[Bool(f"deliver_{j}_as_{k}-th") for k in range(n)] for j in range(n)]
     # w_i = binary representation of actual load carried by each courier
     w = [[Bool(f"cl_{i}_{k}") for k in range(max_weight_Binary)] for i in range(m)]
     # flatten D
@@ -277,6 +300,9 @@ def constraints(instance, solver, sym_breaking):
     distances = [[Bool(f"dist_bin_{i}_{k}") for k in range(max_Distance_Binary)] for i in range(m)]
 
     if sym_breaking:
+        # sort l
+        instance.sort_weight()
+        l = instance.l
         # lexicographic ordering between the paths of two couriers with same load capacity
         for i in range(m - 1):
             if l[i] == l[i+1]:
@@ -298,8 +324,9 @@ def constraints(instance, solver, sym_breaking):
         solver.add(less(w[i], l_bin[i]))
 
     # Constraint 3: every courier has at least 1 item to deliver
-    for i in range(m):
-        solver.add(at_least_one(a[i]))
+    if implied_constraint:
+        for i in range(m):
+            solver.add(at_least_one(a[i]))
 
     # Constraint 4: every item is delivered at some time in its courier's route, and only once
     for i in range(n):
@@ -309,6 +336,8 @@ def constraints(instance, solver, sym_breaking):
     for i in range(m):
         # can't leave from j to go to j
         solver.add(And([Not(x[i][j][j]) for j in range(n + 1)]))
+        if implied_constraint:
+            solver.add(Not(x[i][n][n]))     # don't let courier i have a self loop
         # row j has a 1 iff courier i delivers item j
         for j in range(n):
             solver.add(Implies(a[i][j], exactly_one(x[i][j], f"courier_{i}_leaves_{j}")))
