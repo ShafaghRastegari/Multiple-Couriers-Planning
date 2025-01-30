@@ -1,6 +1,6 @@
 {
  "SMT": {
-  "time": 19,
+  "time": 51,
   "optimal": true,
   "obj": 244,
   "sol": [
@@ -40,7 +40,7 @@
   ]
  },
  "SMT_IMP": {
-  "time": 3,
+  "time": 13,
   "optimal": true,
   "obj": 244,
   "sol": [

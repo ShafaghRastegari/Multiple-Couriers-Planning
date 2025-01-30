@@ -1,5 +1,19 @@
 {
- "SMT_SYM": {
+ "SMT": {
+  "time": 0,
+  "optimal": true,
+  "obj": 206,
+  "sol": [
+   [
+    2
+   ],
+   [
+    1,
+    3
+   ]
+  ]
+ },
+ "SMT_IMP": {
   "time": 0,
   "optimal": true,
   "obj": 206,

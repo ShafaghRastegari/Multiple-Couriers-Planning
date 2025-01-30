@@ -6,9 +6,9 @@ import multiprocessing
 from SMT.utils import *
 from SMT.SMT_Z3 import *
 
-models = [ #"SMT",
-          "SMT_SYM",
-          # "SMT_IMP",
+models = [ "SMT",
+          # "SMT_SYM",
+          "SMT_IMP",
           # "SMT_SYM_IMP"
           ]
 
@@ -23,7 +23,7 @@ def SMT_handler(num_instance):
 
   for instance_num in range(start, end):
     final_result_dict = {}
-    print(f"===============================INSTANCE : {instance_num + 1}===============================")
+    print(f"=============================== INSTANCE : {instance_num + 1}  ===============================")
     for model in models:
       not_optimal_flag = False
       sym = None
