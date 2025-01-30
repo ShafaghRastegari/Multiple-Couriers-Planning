@@ -4,6 +4,7 @@ import os
 import json
 import numpy as np
 from utils import calculate_lower_bound, calculate_upper_bound
+import multiprocessing as mp
 
 
 def read_mcp_instance(filename):
@@ -46,8 +47,10 @@ def solve_mcp(m, n, L, S, D, solver):
     Xijk = 1 If there is a path
          = 0 If there is not a path
     """
-    x = LpVariable.dicts("x", (range(origin), range(origin), range(num_couriers)), cat='Binary')
-    u = LpVariable.dicts("u", (range(num_cities), range(num_couriers)), lowBound=0, upBound=origin-1, cat="Integer")
+    x = LpVariable.dicts("x", (range(m), range(n+1), range(n+1)), cat='Binary')
+    a = LpVariable.dicts("a", (range(m), range(n)), cat="Binary")
+    t = LpVariable.dicts("t", (range(m), range(n)), lowBound=0, upBound=n, cat="Integer")
+    
 
     upper_bound = calculate_upper_bound(m, n, L, S, D)
     lower_bound = calculate_lower_bound(n, D)
@@ -60,7 +63,7 @@ def solve_mcp(m, n, L, S, D, solver):
     ]
     
     courier_distance = [
-        LpVariable(name=f'obj_dist{i}', cat="Integer", lowBound=min(D[i][n]+D[n][i] for i in range(n)), upBound=upper_bound)
+        LpVariable(name=f'obj_dist{i}', cat="Integer", lowBound=0, upBound=upper_bound)
         for i in range(num_couriers)
     ]
     
@@ -70,52 +73,67 @@ def solve_mcp(m, n, L, S, D, solver):
     # Constraints
 
      # # 4. The constraint ensures this value is less than or equal to the courier's capacity
-    for k in range(num_couriers):
-        model += lpSum([S[j] * x[i][j][k] for j in range(num_cities) for i in range(origin)]) == courier_weights[k]
+    for k in range(m):
+        model += lpSum([S[j] * a[k][j] for j in range(n)]) == courier_weights[k]
      
     # 6. No self-loops(courier traveling from a city to itself)
-    for k in range(num_couriers):
-        model += lpSum(x[i][i][k] for i in range(origin)) == 0
+    for k in range(m):
+        model += lpSum(x[k][i][i] for i in range(n)) == 0
             
     # 2. Every item must be delivered by exactly one courier 
     # and ensures every node, except the depot, is entered just once
-    for j in range(num_cities):
-        model += lpSum(x[i][j][k] for i in range(origin) for k in range(num_couriers)) == 1 
+    for j in range(n):
+        model += lpSum(a[k][j] for k in range(m)) == 1 
+        model += lpSum(x[k][i][j] for i in range(n+1) for k in range(m)) == 1 
+        
+        #model += lpSum(x[k][j][i] for i in range(n+1) for k in range(m)) == 1 
    
      
      # 3. Ensures every courier leaves exactly once from the depot.
-    for k in range(num_couriers):
-        model += lpSum(x[num_cities][j][k] for j in range(num_cities)) == 1  # Start from depot exactly once
-
+    for k in range(m):
+        model += lpSum(x[k][n]) == 1  # Start from depot exactly once
+        model += lpSum(x[k][j][n] for j in range(n+1)) == 1  # End at the depot
+    
+    for k in range(m):
+        for j in range(n):
+            model += lpSum(x[k][j]) == a[k][j]
         
     # 5. each courier returns to the depot exactly once
-    for k in range(num_couriers):
-        model += lpSum(x[i][num_cities][k] for i in range(num_cities)) == 1  # End at the depot
+    #for k in range(num_couriers):
+     #   model += lpSum(x[i][num_cities][k] for i in range(num_cities)) == 1  # End at the depot
     
     
     # 1. Ensure flow conservation at all nodes (except depot)
-    for h in range(origin):
-        for k in range(num_couriers):
-            model += lpSum(x[i][h][k] for i in range(origin) if i != h) == lpSum(x[h][j][k] for j in range(origin) if j != h)
+    for j in range(n):
+        for k in range(m):
+            model += lpSum(x[k][i][j] for i in range(n+1)) == lpSum(x[k][j])
+            
+    for k in range(m):
+        for i in range(n):
+            for j in range(n):
+                model += (x[k][i][j]   + x[k][j][i])  <= 1
     
     
     # 8. MTZ subtour elimination
-    for k in range(num_couriers):
-        for i in range(num_cities):
-            for j in range(num_cities):
+    for k in range(m):
+        for i in range(n):
+            for j in range(n):
                 if i != j:
-                    model += (u[i][k] - u[j][k]) + ((num_cities + 1) * x[i][j][k]) <= num_cities-1
+                    model += (t[k][i] - t[k][j])  <= (n) * (1 - x[k][i][j]) - 1
+                    #model += (t[k][j] - t[k][i])  <= (n+2) * (1 - x[k][i][j]) - 1
 
 
-    for k in range(num_couriers):
-        model += lpSum([D[i][j] * x[i][j][k] for i in range(origin) for j in range(origin)]) == courier_distance[k]
+    for k in range(m):
+        model += lpSum([D[i][j] * x[k][i][j] for i in range(n+1) for j in range(n+1)]) == courier_distance[k]
         
     # 7. Ensure max_distance is at least as large as the longest courier distance
-    for k in range(num_couriers):
+    for k in range(m):
         model += max_distance >= courier_distance[k]
 
 
     model.solve(solver)
+    # for var in model.variables():
+    #    print(f"{var.name} = {var.varValue}")
 
     # End timing
     end_time = time.time()
@@ -125,13 +143,13 @@ def solve_mcp(m, n, L, S, D, solver):
 
     if model.status == LpStatusOptimal:
         routes = {}
-        for k in range(num_couriers):
+        for k in range(m):
             route = []
             current = n
             while True:
                 next_point = None
                 for j in range(N0):
-                    if value(x[current][j][k]) > 0.5:
+                    if value(x[k][j][current]) > 0.9:
                         next_point = j
                         break  # Exit the loop once a valid `next_point` is found
                 if next_point is None or next_point == n:  # Back to depot or no next point
@@ -158,43 +176,6 @@ def solve_mcp(m, n, L, S, D, solver):
             'running_time': running_time
         }
         
-        
-def pathFormatter(x, n_cities, n_couriers):
-    """
-    Formats paths for each courier based on the assignment matrix.
-
-    Parameters:
-        x (dict): The decision variables representing whether courier c travels from city i to city j.
-        n_cities (int): The total number of cities, including the depot.
-        n_couriers (int): The total number of couriers.
-
-    Returns:
-        list: A list of lists, where each inner list contains the sequence of city indices (1-based) 
-              representing the route for each courier.
-    """
-    sol = []
-    for c in range(n_couriers):
-        solution_courier = []
-        # Count the number of cities assigned to this courier.
-        num_assigned_to_courier = len([1 for i in range(n_cities) for j in range(n_cities) if value(x[i][j][c]) >= 0.9])
-        
-        # Find the starting city for this courier (first city after leaving the depot).
-        for i in range(n_cities - 1):  # Exclude the depot.
-            if value(x[n_cities - 1][i][c]) >= 0.9:
-                solution_courier.append(i + 1)  # Convert to 1-based index.
-                city = i
-                break
-        
-        # Trace the path for all assigned cities except the starting city.
-        for _ in range(num_assigned_to_courier - 1):
-            for i in range(n_cities - 1):  # Exclude the depot.
-                if value(x[city][i][c]) > 0.9:
-                    solution_courier.append(i + 1)  # Convert to 1-based index.
-                    city = i
-                    break
-        
-        sol.append(solution_courier)
-    return sol
     
     '''    
     if model.status == LpStatusOptimal:
@@ -265,16 +246,68 @@ def save_solution_to_json(instance_name, solver_name, solution, output_folder="r
         json.dump(json_data, json_file, indent=4)
     print(f"Solution for {solver_name} saved to {output_file}")
     
-    
-    
+    import multiprocessing as mp
+
+def solve_and_save(m, n, L, S, D, solver, instance_name, solver_name, output_file):
+    """
+    Wrapper function to solve the model and save the solution.
+    """
+    solution = solve_mcp(m, n, L, S, D, solver)
+    save_solution_to_json(instance_name, solver_name, solution, output_file)
+
 def usage():
     solvers = {
         "PULP_CBC_CMD": PULP_CBC_CMD(msg=False, timeLimit=300),
-        #"GUROBI": GUROBI(msg=False, timeLimit=300),
+        "GUROBI": GUROBI(timeLimit=300, msg=False),
         "HiGHS": getSolver('HiGHS', timeLimit=300, msg=False)
     }
 
-    for instance_num in range(11,21):
+    for instance_num in range(10, 21):
+        print(f"instance : {instance_num + 1}")
+        instance_file = f"Instances/inst0{instance_num+1}.dat" if instance_num < 9 else f"Instances/inst{instance_num+1}.dat"
+        instance_name = instance_num + 1
+        output_file = "result/MIP"
+    
+        m, n, L, S, D = read_mcp_instance(instance_file)
+
+        # Create a list to hold all processes
+        processes = []
+
+        for solver_name, solver in solvers.items():
+            # Create a process for each solver
+            process = mp.Process(
+                target=solve_and_save,
+                args=(m, n, L, S, D, solver, instance_name, solver_name, output_file)
+            )
+            processes.append(process)
+            process.start()  # Start the solver in a separate process
+
+        # Wait for all processes to complete or timeout
+        for process in processes:
+            process.join(timeout=300)  # Wait for the process to complete or timeout
+
+            if process.is_alive():
+                # Solver exceeded the time limit
+                process.terminate()  # Force terminate the solver
+                process.join()  # Ensure the process is cleaned up
+
+                solution_data = {
+                    'status': 'false',
+                    'objective': None,
+                    'routes': {},
+                    'running_time': 300
+                }
+                save_solution_to_json(instance_name, solver_name, solution_data, output_file)
+
+'''   
+def usage():
+    solvers = {
+        #"PULP_CBC_CMD": PULP_CBC_CMD(msg=False, timeLimit=300),
+        "GUROBI": GUROBI(timeLimit=300, msg=False)
+        #"HiGHS": getSolver('HiGHS', timeLimit=300, msg=False)
+    }
+
+    for instance_num in range(1,5):
         print(f"instance : {instance_num + 1}")
         instance_file = f"Instances/inst0{instance_num+1}.dat" if instance_num < 9 else f"Instances/inst{instance_num+1}.dat"
         instance_name = instance_num + 1
@@ -283,9 +316,18 @@ def usage():
         m, n, L, S, D = read_mcp_instance(instance_file)
 
         for solver_name, solver in solvers.items():
+            
+            
+            process = mp.Process(target=solver_name)
+            process.start()  # Start the solver in a separate process
+            process.join(timeout = 300)  # Wait for the process to complete or timeout
+            
+            
+            
             solution = solve_mcp(m, n, L, S, D, solver)
+            
             save_solution_to_json(instance_name, solver_name, solution, output_file)
-
+'''
 
 if __name__ == "__main__":
     usage()
