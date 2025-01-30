@@ -15,6 +15,7 @@ def assign_items(courier_capacity, available_items, S, D, depot_idx):
 def calculate_upper_bound(m, n, L, S, D):
     depot_idx = n  
     available_items = list(range(n))  
+    print(available_items)
     upper_bounds = []
     
     for i in range(m):
@@ -32,13 +33,13 @@ def calculate_upper_bound(m, n, L, S, D):
         
         if len(assigned_items) == 1:
            
-            tsp_bound = 2*max(D[depot_idx][assigned_items[0]-1],  D[depot_idx][assigned_items[0]-1])
+            tsp_bound = 2*max(D[depot_idx][assigned_items[0]],  D[depot_idx][assigned_items[0]])
         else:
            
             tsp_bound = 0
             for item in assigned_items:
                 
-                tsp_bound += 2*max(D[depot_idx][item-1] , D[item-1][depot_idx])
+                tsp_bound += 2*max(D[depot_idx][item] , D[item][depot_idx])
 
         
         upper_bounds.append(tsp_bound)
