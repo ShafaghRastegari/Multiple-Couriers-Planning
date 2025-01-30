@@ -1,40 +1,54 @@
-def assign_items(courier_capacity, n, S, D):
-
-    sorted_items = sorted(range(n), key=lambda j: D[j][n], reverse=True) #sort based on distance to depot 
+def assign_items(courier_capacity, available_items, S, D, depot_idx):
+  
+    sorted_items = sorted(available_items, key=lambda j: D[j][depot_idx], reverse=True)
     assigned_items = []
     total_size = 0
+    
     for j in sorted_items:
         if total_size + S[j] <= courier_capacity:
-            assigned_items.append(j+1)
+            assigned_items.append(j)  
             total_size += S[j]
-    return assigned_items
+   
+    remaining_items = [item for item in available_items if item not in assigned_items]
+    return assigned_items, remaining_items
 
 def calculate_upper_bound(m, n, L, S, D):
+    depot_idx = n  
+    available_items = list(range(n))  
     upper_bounds = []
+    
     for i in range(m):
-        Q_i = assign_items(L[i], n, S, D)
-        if not Q_i:
-            continue
+        if not available_items:
+            break  
         
-
         
-        tsp_bound = 2*max(D[n][Q_i[0]-1],D[Q_i[-1]-1][n]) #depot to first city and back
+        assigned_items, available_items = assign_items(
+            L[i], available_items, S, D, depot_idx
+        )
+        print(assigned_items)
+        if not assigned_items:
+            continue  
         
-        for j in range(len(Q_i)-1):
-            tsp_bound += D[Q_i[j]-1][Q_i[j+1]-1]  #City-to-city
-       
+        
+        if len(assigned_items) == 1:
+           
+            tsp_bound = 2*max(D[depot_idx][assigned_items[0]-1],  D[depot_idx][assigned_items[0]-1])
+        else:
+           
+            tsp_bound = 0
+            for item in assigned_items:
+                
+                tsp_bound += 2*max(D[depot_idx][item-1] , D[item-1][depot_idx])
 
         
         upper_bounds.append(tsp_bound)
-
-    upper_bound_1 = max(upper_bounds) if upper_bounds else 0
-    print(f"First upper bound (max TSP): {upper_bound_1}")
-
-    max_distances = [max(D[i][:-1]) for i in range(n)]
-    max_distances.sort()
-    upper_bound_2 = sum(max_distances[m:]) + max(D[n]) + max([D[j][n] for j in range(n)])
-    print(f"second upper : {upper_bound_2}")
-    return min(upper_bound_1, upper_bound_2)
+    
+   
+    upper_bound_final = max(upper_bounds) if upper_bounds else 0
+    
+    
+    print(f"Final Upper Bound: {upper_bound_final})")
+    return upper_bound_final
 
 
 
