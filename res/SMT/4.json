@@ -1,35 +1,8 @@
 {
- "SMT_NO_SYM": {
-  "time": 1,
-  "optimal": true,
-  "obj": 220,
-  "sol": [
-   [
-    9
-   ],
-   [
-    1
-   ],
-   [
-    4
-   ],
-   [
-    2,
-    7
-   ],
-   [
-    10,
-    6
-   ],
-   [
-    8
-   ],
-   [
-    5
-   ],
-   [
-    3
-   ]
-  ]
+ "SMT_SYM": {
+  "time": 300,
+  "optimal": false,
+  "obj": null,
+  "sol": null
  }
 }
