@@ -218,7 +218,7 @@ def usage():
         "HiGHS": getSolver('HiGHS', timeLimit=300, msg=False)
     }
 
-    for instance_num in range(10, 11):
+    for instance_num in range(11, 13):
         print(f"instance : {instance_num + 1}")
         instance_file = f"Instances/inst0{instance_num+1}.dat" if instance_num < 9 else f"Instances/inst{instance_num+1}.dat"
         instance_name = instance_num + 1
@@ -243,9 +243,12 @@ def usage():
 
         # Wait for all processes to complete or timeout
                 if process.is_alive():
+                    print("exceeded 300...")
                     # Solver exceeded the time limit
-                    process.terminate()  # Force terminate the solver
+                    process.kill()  # Force terminate the solver
                     process.join()  # Ensure the process is cleaned up
+                    process.close()
+                    print("after killing:)")
                 if len(shared_list) == 0:
                     solution = {
                         'time': 300,
