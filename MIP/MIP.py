@@ -3,8 +3,8 @@ import time
 import os
 import json
 import numpy as np
-from utils import calculate_lower_bound, calculate_upper_bound
 import multiprocessing as mp
+from MIP_model import solve_mip
 
 
 def read_mcp_instance(filename):
@@ -26,129 +26,22 @@ def read_mcp_instance(filename):
         for _ in range(n + 1):  # n items + origin point
             row = list(map(int, f.readline().split()))
             distances.append(row)
-        #distances = np.array([list(map(int, f.readline().split())) for line in lines[4:]])
             
     return m, n, loads, sizes, distances
 
-def solve_mcp(m, n, L, S, D, solver):
-    
-    start_time = time.time()
-    model = LpProblem("Multiple_Couriers_Planning", LpMinimize)
-    
-    num_couriers = m  # Couriers
-    N = n  # Items
-    N0 = n + 1  # Items + depot
-    
-    origin = len(D[1])
-    num_cities = len(D[1])-1 #except depot
-    
-    # Decision Variables
-    """
-    Xijk = 1 If there is a path
-         = 0 If there is not a path
-    """
-    x = LpVariable.dicts("x", (range(m), range(n+1), range(n+1)), cat='Binary')
-    a = LpVariable.dicts("a", (range(m), range(n)), cat="Binary")
-    t = LpVariable.dicts("t", (range(m), range(n)), lowBound=0, upBound=n, cat="Integer")
-    
 
-    upper_bound = calculate_upper_bound(m, n, L, S, D)
-    lower_bound = calculate_lower_bound(n, D)
-
-    max_distance = LpVariable("max_distance", lowBound=lower_bound, upBound=upper_bound, cat="Integer")
-    
-    courier_weights = [
-        LpVariable(name=f'weight_{i}', lowBound=0, upBound=L[i], cat="Integer")
-        for i in range(num_couriers)
-    ]
-    
-    courier_distance = [
-        LpVariable(name=f'obj_dist{i}', cat="Integer", lowBound=0, upBound=upper_bound)
-        for i in range(num_couriers)
-    ]
-    
-    # Objective Function
-    model += max_distance
-    
-    # Constraints
-
-     # 4. The constraint ensures this value is less than or equal to the courier's capacity
-    for k in range(m):
-        model += lpSum([S[j] * a[k][j] for j in range(n)]) == courier_weights[k]
-     
-    # 6. No self-loops(courier traveling from a city to itself)
-    for k in range(m):
-        model += lpSum(x[k][i][i] for i in range(n)) == 0
-            
-    # 2. Every item must be delivered by exactly one courier 
-    # and ensures every node, except the depot, is entered just once
-    for j in range(n):
-        model += lpSum(a[k][j] for k in range(m)) == 1 
-        model += lpSum(x[k][i][j] for i in range(n+1) for k in range(m)) == 1 
-        
-        #model += lpSum(x[k][j][i] for i in range(n+1) for k in range(m)) == 1 
-   
-     
-     # 3. Ensures every courier leaves exactly once from the depot.
-    for k in range(m):
-        model += lpSum(x[k][n]) == 1  # Start from depot exactly once
-        model += lpSum(x[k][j][n] for j in range(n+1)) == 1  # End at the depot
-    
-    for k in range(m):
-        for j in range(n):
-            model += lpSum(x[k][j]) == a[k][j]
-        
-    # 5. each courier returns to the depot exactly once
-    #for k in range(num_couriers):
-     #   model += lpSum(x[i][num_cities][k] for i in range(num_cities)) == 1  # End at the depot
-    
-    
-    # 1. Ensure flow conservation at all nodes (except depot)
-    for j in range(n):
-        for k in range(m):
-            model += lpSum(x[k][i][j] for i in range(n+1)) == lpSum(x[k][j])
-            
-    for k in range(m):
-        for i in range(n):
-            for j in range(n):
-                model += (x[k][i][j]   + x[k][j][i])  <= 1
-    
-    
-    # 8. MTZ subtour elimination
-    for k in range(m):
-        for i in range(n):
-            for j in range(n):
-                if i != j:
-                    model += (t[k][i] - t[k][j])  <= (n) * (1 - x[k][i][j]) - 1
-                    #model += (t[k][j] - t[k][i])  <= (n+2) * (1 - x[k][i][j]) - 1
-
-
-    for k in range(m):
-        model += lpSum([D[i][j] * x[k][i][j] for i in range(n+1) for j in range(n+1)]) == courier_distance[k]
-        
-    # 7. Ensure max_distance is at least as large as the longest courier distance
-    for k in range(m):
-        model += max_distance >= courier_distance[k]
-
+def solve_model(model, m, n, x, max_distance, solver):
 
     model.solve(solver)
-    # for var in model.variables():
-    #    print(f"{var.name} = {var.varValue}")
-
-    # End timing
-    end_time = time.time()
-    running_time = end_time - start_time
-
     # Extract solution
-
-    if model.status == LpStatusOptimal:
+    if model.status == 1:
         routes = {}
         for k in range(m):
             route = []
             current = n
             while True:
                 next_point = None
-                for j in range(N0):
+                for j in range(n+1):
                     if value(x[k][j][current]) > 0.9:
                         next_point = j
                         break  # Exit the loop once a valid `next_point` is found
@@ -164,7 +57,7 @@ def solve_mcp(m, n, L, S, D, solver):
                 
         
         return {
-            'time': int(running_time),
+            'time': int(model.solutionTime),
             'optimal': True,
             'obj': round(value(max_distance)),
             'sol': list(routes.values())
@@ -205,20 +98,21 @@ def solve_and_save(shared_list, m, n, L, S, D, solver, instance_name, solver_nam
     """
     Wrapper function to solve the model and save the solution.
     """
-    solution = solve_mcp(m, n, L, S, D, solver)
+    model, x, max_distance = solve_mip(m, n, L, S, D)
+    solution = solve_model(model, m, n, x, max_distance, solver)
     shared_list.append((solution['time'], solution['optimal'], solution['obj'], solution['sol']))
     
 
 
 
-def usage():
+def run_model():
     solvers = {
         "PULP_CBC_CMD": PULP_CBC_CMD(msg=False, timeLimit=300),
         "GUROBI": GUROBI(timeLimit=300, msg=False),
         "HiGHS": getSolver('HiGHS', timeLimit=300, msg=False)
     }
 
-    for instance_num in range(11, 13):
+    for instance_num in range(10, 21):
         print(f"instance : {instance_num + 1}")
         instance_file = f"Instances/inst0{instance_num+1}.dat" if instance_num < 9 else f"Instances/inst{instance_num+1}.dat"
         instance_name = instance_num + 1
@@ -266,29 +160,6 @@ def usage():
                     }
                 save_solution_to_json(instance_name, solver_name, solution, output_file)
 
-'''   
-def usage():
-    solvers = {
-        "PULP_CBC_CMD": PULP_CBC_CMD(msg=False, timeLimit=300),
-        "GUROBI": GUROBI(timeLimit=300, msg=False)
-        "HiGHS": getSolver('HiGHS', timeLimit=300, msg=False)
-    }
-
-    for instance_num in range(1,5):
-        print(f"instance : {instance_num + 1}")
-        instance_file = f"Instances/inst0{instance_num+1}.dat" if instance_num < 9 else f"Instances/inst{instance_num+1}.dat"
-        instance_name = instance_num + 1
-        output_file = "result/MIP"
-    
-        m, n, L, S, D = read_mcp_instance(instance_file)
-
-        for solver_name, solver in solvers.items():           
-            
-            
-            solution = solve_mcp(m, n, L, S, D, solver)
-            
-            save_solution_to_json(instance_name, solver_name, solution, output_file)
-'''
 
 if __name__ == "__main__":
-    usage()
+    run_model()
