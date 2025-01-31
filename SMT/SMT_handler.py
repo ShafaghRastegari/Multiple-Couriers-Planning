@@ -7,9 +7,9 @@ from SMT.utils import *
 from SMT.SMT_Z3 import *
 
 models = [ "SMT",
-          # "SMT_SYM",
+          "SMT_SYM",
           "SMT_IMP",
-          # "SMT_SYM_IMP"
+          "SMT_SYM_IMP"
           ]
 
 def SMT_handler(num_instance):

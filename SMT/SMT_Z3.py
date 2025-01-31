@@ -72,7 +72,7 @@ def SMT(shared_list, m, n, l, s, D, sym_breaking=False, imp_cons=True):
     solver.add(Distinct(items))
 
   if sym_breaking:
-    add_sb_constraints(m, n, l, solver, X)
+    add_sb_constraints(m, l, solver, X, load)
   if imp_cons:
     add_implied_constraints(m, n, solver, X, count)
 
