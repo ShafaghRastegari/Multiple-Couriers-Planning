@@ -72,7 +72,7 @@ def solve_mcp(m, n, L, S, D, solver):
     
     # Constraints
 
-     # # 4. The constraint ensures this value is less than or equal to the courier's capacity
+     # 4. The constraint ensures this value is less than or equal to the courier's capacity
     for k in range(m):
         model += lpSum([S[j] * a[k][j] for j in range(n)]) == courier_weights[k]
      
@@ -161,69 +161,22 @@ def solve_mcp(m, n, L, S, D, solver):
 
             if route:  # Only include routes that are used
                 routes[k] = route
+                
         
         return {
-            'status': 'true',
-            'objective': value(max_distance),
-            'routes': routes.values(),
-            'running_time': running_time
+            'time': int(running_time),
+            'optimal': True,
+            'obj': round(value(max_distance)),
+            'sol': list(routes.values())
         }
     else:
         return {
-            'status': 'false',
-            'objective': None,
-            'routes': {},
-            'running_time': running_time
+            'time': 300,
+            'optimal': False,
+            'obj': "N/A",
+            'sol': []
         }
         
-    
-    '''    
-    if model.status == LpStatusOptimal:
-        routes = {}
-        for k in range(num_couriers):
-            route = []
-            current = n  # Start at the depot
-            max_iterations = N0  # Maximum number of iterations
-            iteration_count = 0
-
-            while True:
-                iteration_count += 1
-                if iteration_count > max_iterations:
-                    raise RuntimeError("Infinite loop detected in route extraction.")
-
-                next_point = None
-                for j in range(N0):
-                    if value(x[current][j][k]) >= 0.9:  # Use the same threshold as format_paths
-                        next_point = j
-                        break
-
-                if next_point is None or next_point == n:
-                    route.append("Depot")  # Mark depot explicitly
-                    break
-                elif next_point < 0 or next_point >= N0:
-                    raise ValueError(f"Invalid next_point index: {next_point}")
-                else:
-                    route.append(next_point + 1)  # Convert item indices to 1-based
-                    current = next_point
-
-            if not route:
-                route = ["Unused"]  # Mark unused couriers
-            routes[k] = route
-    
-        return {
-            'status': 'true',
-            'objective': value(max_distance),
-            'routes': routes.values(),
-            'running_time': running_time
-        }
-    else:
-        return {
-            'status': 'false',
-            'objective': None,
-            'routes': {},
-            'running_time': running_time
-        }
-    '''
         
 def save_solution_to_json(instance_name, solver_name, solution, output_folder="res/MIP"):
     
@@ -237,23 +190,26 @@ def save_solution_to_json(instance_name, solver_name, solution, output_folder="r
         json_data = {}
     
     json_data[solver_name] = {
-        "time": int(solution['running_time']),
-        "optimal": solution['status'],
-        "obj": int(solution.get("objective", 0)) if solution.get("objective") is not None else None,
-        "sol": list(solution['routes']),
+        "time": solution['time'],
+        "optimal": solution['optimal'],
+        "obj": solution["obj"],
+        "sol": solution['sol'],
     }
     with open(output_file, 'w') as json_file:
         json.dump(json_data, json_file, indent=4)
     print(f"Solution for {solver_name} saved to {output_file}")
-    
-    import multiprocessing as mp
 
-def solve_and_save(m, n, L, S, D, solver, instance_name, solver_name, output_file):
+
+
+def solve_and_save(shared_list, m, n, L, S, D, solver, instance_name, solver_name, output_file):
     """
     Wrapper function to solve the model and save the solution.
     """
     solution = solve_mcp(m, n, L, S, D, solver)
-    save_solution_to_json(instance_name, solver_name, solution, output_file)
+    shared_list.append((solution['time'], solution['optimal'], solution['obj'], solution['sol']))
+    
+
+
 
 def usage():
     solvers = {
@@ -262,7 +218,7 @@ def usage():
         "HiGHS": getSolver('HiGHS', timeLimit=300, msg=False)
     }
 
-    for instance_num in range(10, 21):
+    for instance_num in range(10, 11):
         print(f"instance : {instance_num + 1}")
         instance_file = f"Instances/inst0{instance_num+1}.dat" if instance_num < 9 else f"Instances/inst{instance_num+1}.dat"
         instance_name = instance_num + 1
@@ -271,40 +227,48 @@ def usage():
         m, n, L, S, D = read_mcp_instance(instance_file)
 
         # Create a list to hold all processes
-        processes = []
+        #processes = []
 
         for solver_name, solver in solvers.items():
             # Create a process for each solver
-            process = mp.Process(
-                target=solve_and_save,
-                args=(m, n, L, S, D, solver, instance_name, solver_name, output_file)
-            )
-            processes.append(process)
-            process.start()  # Start the solver in a separate process
+            with mp.Manager() as manager:
+                shared_list = manager.list()
+                process = mp.Process(
+                    target=solve_and_save,
+                    args=(shared_list, m, n, L, S, D, solver, instance_name, solver_name, output_file)
+                )
+                #processes.append(process)
+                process.start()  # Start the solver in a separate process
+                process.join(timeout=300)
 
         # Wait for all processes to complete or timeout
-        for process in processes:
-            process.join(timeout=300)  # Wait for the process to complete or timeout
-
-            if process.is_alive():
-                # Solver exceeded the time limit
-                process.terminate()  # Force terminate the solver
-                process.join()  # Ensure the process is cleaned up
-
-                solution_data = {
-                    'status': 'false',
-                    'objective': None,
-                    'routes': {},
-                    'running_time': 300
-                }
-                save_solution_to_json(instance_name, solver_name, solution_data, output_file)
+                if process.is_alive():
+                    # Solver exceeded the time limit
+                    process.terminate()  # Force terminate the solver
+                    process.join()  # Ensure the process is cleaned up
+                if len(shared_list) == 0:
+                    solution = {
+                        'time': 300,
+                        'optimal': False,
+                        'obj': "N/A",
+                        'sol': []
+                    }
+                else:
+                    time, optimal, obj, sol = shared_list[-1]
+                    solution = {
+                        'time': time,
+                        'optimal': optimal,
+                        'obj': obj,
+                        'sol': sol
+                    }
+                save_solution_to_json(instance_name, solver_name, solution, output_file)
 
 '''   
 def usage():
     solvers = {
-        #"PULP_CBC_CMD": PULP_CBC_CMD(msg=False, timeLimit=300),
+        "PULP_CBC_CMD": PULP_CBC_CMD(msg=False, timeLimit=300),
         "GUROBI": GUROBI(timeLimit=300, msg=False)
-        #"HiGHS": getSolver('HiGHS', timeLimit=300, msg=False)
+        "HiGHS": getSolver('HiGHS', timeLimit=300, msg=False)
     }
 
     for instance_num in range(1,5):
@@ -315,13 +279,7 @@ def usage():
     
         m, n, L, S, D = read_mcp_instance(instance_file)
 
-        for solver_name, solver in solvers.items():
-            
-            
-            process = mp.Process(target=solver_name)
-            process.start()  # Start the solver in a separate process
-            process.join(timeout = 300)  # Wait for the process to complete or timeout
-            
+        for solver_name, solver in solvers.items():           
             
             
             solution = solve_mcp(m, n, L, S, D, solver)
