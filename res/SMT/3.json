@@ -1,17 +1,77 @@
 {
- "SMT_NO_SYM": {
+ "SMT": {
+  "time": 0,
+  "optimal": true,
+  "obj": 12,
+  "sol": [
+   [
+    3,
+    6,
+    5
+   ],
+   [
+    4,
+    2
+   ],
+   [
+    7,
+    1
+   ]
+  ]
+ },
+ "SMT_SYM": {
+  "time": 0,
+  "optimal": true,
+  "obj": 12,
+  "sol": [
+   [
+    3,
+    6,
+    5
+   ],
+   [
+    4,
+    2
+   ],
+   [
+    7,
+    1
+   ]
+  ]
+ },
+ "SMT_IMP": {
   "time": 0,
   "optimal": true,
   "obj": 12,
   "sol": [
    [
     5,
+    4,
+    2
+   ],
+   [
     6,
     3
    ],
    [
+    1,
+    7
+   ]
+  ]
+ },
+ "SMT_SYM_IMP": {
+  "time": 0,
+  "optimal": true,
+  "obj": 12,
+  "sol": [
+   [
+    5,
     4,
     2
+   ],
+   [
+    6,
+    3
    ],
    [
     1,

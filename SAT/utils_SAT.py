@@ -140,15 +140,6 @@ def consecutive(v, u):
 
     return And(clauses)
 
-def sort_decreasing(matrix):
-
-    m = len(matrix)
-    clauses = []
-    for i in range(m-1):
-        clauses.append(less(matrix[i+1], matrix[i]))
-    return And(clauses)
-
-
 def All_Less_bin(distances, upper_bound_bin):
     #Encodes the constraint {Forall i. distances[i] <= upper_bound_bin}
     m = len(distances)
@@ -169,31 +160,4 @@ def At_LeastOne_Greater_bin(distances, lower_bound_bin):
         clauses.append(less(lower_bound_bin, distances[i]))
 
     return Or(clauses)
-
-            
-'''def find_max(v, max_res, name=""):
-    
-    n = len(v)
-    if n == 1:
-        return equals(v[0], max_res)
-    elif n == 2:
-        return And(Implies(less(v[0], v[1]), equals(v[1], max_res)),
-                   Implies(Not(less(v[0], v[1])), equals(v[0], v[1])))
-    
-    else:
-        max_result = [[Bool(f"maxpar_{name}_{i}_{b}") for b in range(len(max_res))] for i in range(n-2)]
-        clause = []
-        
-        clause.append(Implies(less(v[0], v[1]), equals(v[1], max_result[0])))
-        clause.append(Implies(Not(less(v[0], v[1])), equals(v[0], max_result[0])))
-        
-        for i in range(1, n-2):
-            clause.append(Implies(less(v[i+1], max_result[i-1]), equals(max_result[i-1], max_result[i])))
-            clause.append(Implies(Not(less(v[i+1], max_result[i-1])), equals(v[i+1], max_result[i])))
-            
-        clause.append(Implies(less(v[-1], max_result[-1]), equals(max_result[-1], max_res)))
-        clause.append(Implies(Not(less(v[-1], max_result[-1])), equals(v[-1], max_res)))
-        
-        return And(clause)'''
-
 
