@@ -94,7 +94,7 @@ def save_solution_to_json(instance_name, solver_name, solution, output_folder="r
 
 
 
-def solve_and_save(shared_list, m, n, L, S, D, solver, instance_name, solver_name, output_file):
+def solve_and_save(shared_list, m, n, L, S, D, solver):
     """
     Wrapper function to solve the model and save the solution.
     """
@@ -112,11 +112,12 @@ def run_model():
         "HiGHS": getSolver('HiGHS', timeLimit=300, msg=False)
     }
 
-    for instance_num in range(10, 21):
+    for instance_num in range(10, 14):
         print(f"instance : {instance_num + 1}")
-        instance_file = f"Instances/inst0{instance_num+1}.dat" if instance_num < 9 else f"Instances/inst{instance_num+1}.dat"
+        instance_file = os.path.join("..", "Instances", f"inst0{instance_num+1}.dat") if instance_num < 9 else os.path.join("..", "Instances", f"inst{instance_num+1}.dat")
+        #instance_file = f"../Instances/inst0{instance_num+1}.dat" if instance_num < 9 else f"../Instances/inst{instance_num+1}.dat"
         instance_name = instance_num + 1
-        output_file = "result/MIP"
+        output_file = os.path.join("..", "res", "MIP")
     
         m, n, L, S, D = read_mcp_instance(instance_file)
 
@@ -129,12 +130,14 @@ def run_model():
                 shared_list = manager.list()
                 process = mp.Process(
                     target=solve_and_save,
-                    args=(shared_list, m, n, L, S, D, solver, instance_name, solver_name, output_file)
+                    args=(shared_list, m, n, L, S, D, solver)
                 )
                 #processes.append(process)
+                print("before start")
                 process.start()  # Start the solver in a separate process
+                print("after start")
                 process.join(timeout=300)
-
+                print("after timeout")
         # Wait for all processes to complete or timeout
                 if process.is_alive():
                     print("exceeded 300...")
@@ -143,6 +146,8 @@ def run_model():
                     process.join()  # Ensure the process is cleaned up
                     process.close()
                     print("after killing:)")
+                else:
+                    print("in else")
                 if len(shared_list) == 0:
                     solution = {
                         'time': 300,
