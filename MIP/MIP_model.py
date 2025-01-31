@@ -1,4 +1,4 @@
-from utils import calculate_lower_bound, calculate_upper_bound
+from utils import *
 from pulp import *
 
 def solve_mip(m, n, L, S, D):
