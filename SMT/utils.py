@@ -29,17 +29,17 @@ def courier_path_from_result(result_count_final, result_X_final, COURIERS, ITEMS
   return courier_path
 
 def pars_model(model):
+  
+  sym = False
+  imp = False
 
-  if model == "SMT":
-    sym = False
-    imp = False
-  elif model == "SMT_SYM":
+  if model == "SMT_SYM":
     sym = True
     imp = False
-  if model == "SMT_IMP":
+  elif model == "SMT_IMP":
     sym = False
     imp = True
-  elif model[1] == "SMT_SYM_IMP":
+  elif model == "SMT_SYM_IMP":
     sym = True
     imp = True
     

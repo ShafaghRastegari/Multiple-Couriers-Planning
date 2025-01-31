@@ -34,7 +34,7 @@ def SMT_handler(num_instance):
       with multiprocessing.Manager() as manager:
         shared_list = manager.list()
         # Create a Process to run the target function
-        process = multiprocessing.Process(target=SMT,
+        process = multiprocessing.Process(target=SMT_Solver,
                                         args=(shared_list,
                                               *run_model_on_instance((f"./Instances/inst0{instance_num+1}.dat"
                                                 if instance_num < 9 else f"./Instances/inst{instance_num+1}.dat")), sym, imp))
