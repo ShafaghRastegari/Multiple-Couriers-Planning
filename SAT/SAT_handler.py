@@ -11,6 +11,9 @@ def SAT_function(num_instance):
     if num_instance == 0:
         start = 1
         end = 22
+    elif num_instance == -1:
+        start = 1
+        end = 11
     else:
         start = num_instance
         end = num_instance + 1
@@ -75,16 +78,17 @@ def SAT_function(num_instance):
                             time, optimal, obj, sol = 300, False, "N/A", []
                         else:
                             time, optimal, obj, sol, distances = shared_list[-1]
-
+                            show = False
                             if optimal_flag:
                                 time = 300
                                 optimal = False
-                                print(f"-----------Objective value: {obj}-----------")
-                                print(f"------------------Routes-----------------")
-                                for courier in range(m):
-                                    print("Origin --> " +
-                                          ' --> '.join([str(node) for node in sol[courier]]) +
-                                          f' --> Origin: travelled {distances[courier]}')
+                                if show:
+                                    print(f"-----------Objective value: {obj}-----------")
+                                    print(f"------------------Routes-----------------")
+                                    for courier in range(m):
+                                        print("Origin --> " +
+                                            ' --> '.join([str(node) for node in sol[courier]]) +
+                                            f' --> Origin: travelled {distances[courier]}')
 
                     json_dict[key_dict] = {"time": time, "optimal": optimal, "obj": obj, "sol": sol}
                     print(f"best answer: {obj}")

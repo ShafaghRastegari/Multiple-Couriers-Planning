@@ -17,6 +17,9 @@ WORKDIR /app
 # Copy local files to the container
 COPY . /app
 
+# Set environment variable to point to the license file
+ENV GRB_LICENSE_FILE=/app/MIP/gurobi.lic
+
 # Install dependencies
 RUN pip install -r /app/requirements.txt
 
