@@ -4,7 +4,7 @@ import os
 import json
 import numpy as np
 import multiprocessing as mp
-from MIP_model import solve_mip
+from MIP.MIP_model import solve_mip
 
 
 def read_mcp_instance(filename):
@@ -105,19 +105,26 @@ def solve_and_save(shared_list, m, n, L, S, D, solver):
 
 
 
-def run_model():
+def run_model(num_instance):
+    if num_instance == 0:
+        start = 10
+        end = 21
+    else:
+        start = num_instance - 1
+        end = num_instance
+    
     solvers = {
         "PULP_CBC_CMD": PULP_CBC_CMD(msg=False, timeLimit=300),
         "GUROBI": GUROBI(timeLimit=300, msg=False),
         "HiGHS": getSolver('HiGHS', timeLimit=300, msg=False)
     }
 
-    for instance_num in range(10, 14):
+    for instance_num in range(start, end):
         print(f"instance : {instance_num + 1}")
-        instance_file = os.path.join("..", "Instances", f"inst0{instance_num+1}.dat") if instance_num < 9 else os.path.join("..", "Instances", f"inst{instance_num+1}.dat")
+        instance_file = os.path.join(".", "Instances", f"inst0{instance_num+1}.dat") if instance_num < 9 else os.path.join(".", "Instances", f"inst{instance_num+1}.dat")
         #instance_file = f"../Instances/inst0{instance_num+1}.dat" if instance_num < 9 else f"../Instances/inst{instance_num+1}.dat"
         instance_name = instance_num + 1
-        output_file = os.path.join("..", "res", "MIP")
+        output_file = os.path.join(".", "res", "MIP")
     
         m, n, L, S, D = read_mcp_instance(instance_file)
 
@@ -166,5 +173,5 @@ def run_model():
                 save_solution_to_json(instance_name, solver_name, solution, output_file)
 
 
-if __name__ == "__main__":
-    run_model()
+# if __name__ == "__main__":
+#     run_model()
