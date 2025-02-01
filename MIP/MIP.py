@@ -4,24 +4,15 @@ import os
 import json
 import numpy as np
 import multiprocessing as mp
-from MIP_model import solve_mip
+from MIP.MIP_model import solve_mip
 
 
 def read_mcp_instance(filename):
     with open(filename, 'r') as f:
-        # number of couriers
         m = int(f.readline())
-
-        # number of items
         n = int(f.readline())
-        
-        # Read courier load capacities
         loads = list(map(int, f.readline().split()))
-        
-        # Read item sizes
         sizes = list(map(int, f.readline().split()))
-        
-        # Read distance matrix
         distances = []
         for _ in range(n + 1):  # n items + origin point
             row = list(map(int, f.readline().split()))
@@ -33,7 +24,6 @@ def read_mcp_instance(filename):
 def solve_model(model, m, n, x, max_distance, solver):
 
     model.solve(solver)
-    # Extract solution
     if model.status == 1:
         routes = {}
         for k in range(m):
@@ -54,8 +44,6 @@ def solve_model(model, m, n, x, max_distance, solver):
 
             if route:  # Only include routes that are used
                 routes[k] = route
-                
-        
         return {
             'time': int(model.solutionTime),
             'optimal': True,
@@ -93,61 +81,47 @@ def save_solution_to_json(instance_name, solver_name, solution, output_folder="r
     print(f"Solution for {solver_name} saved to {output_file}")
 
 
-
 def solve_and_save(shared_list, m, n, L, S, D, solver):
-    """
-    Wrapper function to solve the model and save the solution.
-    """
     model, x, max_distance = solve_mip(m, n, L, S, D)
     solution = solve_model(model, m, n, x, max_distance, solver)
     shared_list.append((solution['time'], solution['optimal'], solution['obj'], solution['sol']))
     
 
-
-
-def run_model():
+def run_model(num_instance):
+    if num_instance == 0:
+        start = 7
+        end = 10
+    else:
+        start = num_instance - 1
+        end = num_instance
+    
     solvers = {
         "PULP_CBC_CMD": PULP_CBC_CMD(msg=False, timeLimit=300),
         "GUROBI": GUROBI(timeLimit=300, msg=False),
         "HiGHS": getSolver('HiGHS', timeLimit=300, msg=False)
     }
 
-    for instance_num in range(10, 14):
+    for instance_num in range(start, end):
         print(f"instance : {instance_num + 1}")
-        instance_file = os.path.join("..", "Instances", f"inst0{instance_num+1}.dat") if instance_num < 9 else os.path.join("..", "Instances", f"inst{instance_num+1}.dat")
-        #instance_file = f"../Instances/inst0{instance_num+1}.dat" if instance_num < 9 else f"../Instances/inst{instance_num+1}.dat"
+        instance_file = os.path.join(".", "Instances", f"inst0{instance_num+1}.dat") if instance_num < 9 else os.path.join(".", "Instances", f"inst{instance_num+1}.dat")
         instance_name = instance_num + 1
-        output_file = os.path.join("..", "res", "MIP")
+        output_file = os.path.join(".", "res", "MIP")
     
         m, n, L, S, D = read_mcp_instance(instance_file)
 
-        # Create a list to hold all processes
-        #processes = []
-
         for solver_name, solver in solvers.items():
-            # Create a process for each solver
             with mp.Manager() as manager:
                 shared_list = manager.list()
                 process = mp.Process(
                     target=solve_and_save,
                     args=(shared_list, m, n, L, S, D, solver)
                 )
-                #processes.append(process)
-                print("before start")
-                process.start()  # Start the solver in a separate process
-                print("after start")
+                process.start()
                 process.join(timeout=300)
-                print("after timeout")
-        # Wait for all processes to complete or timeout
                 if process.is_alive():
-                    print("exceeded 300...")
-                    # Solver exceeded the time limit
-                    process.kill()  # Force terminate the solver
-                    process.join()  # Ensure the process is cleaned up
+                    process.kill()
+                    process.join()
                     process.close()
-                    print("after killing:)")
-                else:
-                    print("in else")
                 if len(shared_list) == 0:
                     solution = {
                         'time': 300,
@@ -164,7 +138,3 @@ def run_model():
                         'sol': sol
                     }
                 save_solution_to_json(instance_name, solver_name, solution, output_file)
-
-
-if __name__ == "__main__":
-    run_model()
