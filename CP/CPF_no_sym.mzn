@@ -34,7 +34,7 @@ int: lower_bound;
 
 array[NODES] of var NODES: successor;
 array[NODES] of var NODES: predecessor;
-array[NODES] of var COURIERS: courier_route;
+array[NODES] of var COURIERS: route_m;
 array[NODES] of var LOADS: load;
 array[NODES] of var 0..upper_bound: final_dist;
 
@@ -54,14 +54,14 @@ constraint predecessor[n + 1] = n + 2 * m;
 constraint forall(s in START_NODES)(not (successor[s] in END_NODES));
 
 % assign each start->end nodes with a courier
-constraint forall(i in START_NODES)(courier_route[i] = i - n);
-constraint forall(i in END_NODES)(courier_route[i] = i - n - m);
+constraint forall(i in START_NODES)(route_m[i] = i - n);
+constraint forall(i in END_NODES)(route_m[i] = i - n - m);
 
 %successor / predecessor consistency constraint 
 constraint forall(i in NODES) (successor[predecessor[i]] == i);
 constraint forall(i in NODES) (predecessor[successor[i]] == i);
-constraint forall(i in ITEMS)(courier_route[successor[i]] = courier_route[i]);
-constraint forall(i in ITEMS)(courier_route[predecessor[i]] = courier_route[i]);
+constraint forall(i in ITEMS)(route_m[successor[i]] = route_m[i]);
+constraint forall(i in ITEMS)(route_m[predecessor[i]] = route_m[i]);
 
 % ensures each node is visited exactly once and create a complete tour 
 
@@ -80,7 +80,7 @@ constraint forall(d in START_NODES where successor[d] in END_NODES)(final_dist[s
 constraint forall(i in START_NODES)(load[i] = 0);
 constraint forall(i in ITEMS) (load[i] + demand[i] = load[successor[i]]);
 constraint forall(i in START_NODES) (load[i] = load[successor[i]]);
-constraint forall(i in ITEMS) (load[i] <= L[courier_route[i]]);
+constraint forall(i in ITEMS) (load[i] <= L[route_m[i]]);
 constraint forall(i in COURIERS)(load[i + n + m] <= L[i]);
 
 %Symmetry-breaking constraint
@@ -100,5 +100,5 @@ constraint obj = max(final_dist);
 solve :: seq_search([
     int_search(successor, first_fail, indomain_split),
     int_search(load, first_fail, indomain_split),
-    int_search(courier_route, first_fail, indomain_split)
+    int_search(route_m, first_fail, indomain_split)
 ]) minimize(obj)::domain

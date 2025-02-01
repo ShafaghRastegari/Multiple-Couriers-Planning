@@ -10,7 +10,7 @@ def extract_latest_decision(x_out):
         vars_pattern = re.compile(
             r"(successor\s*=\s*\[.*?\];\s*"
             r"predecessor\s*=\s*\[.*?\];\s*"
-            r"courier_route\s*=\s*\[.*?\];\s*"
+            r"route_m\s*=\s*\[.*?\];\s*"
             r"load\s*=\s*\[.*?\];\s*"
             r"final_dist\s*=\s*\[.*?\];\s*"
             r"obj\s*=\s*\d+;)",
@@ -58,18 +58,18 @@ def parse_solution(desired_output):
     try:
         successor = list(map(int, re.search(r"successor = \[(.*?)\];", desired_output).group(1).split(", ")))
         predecessor = list(map(int, re.search(r"predecessor = \[(.*?)\];", desired_output).group(1).split(", ")))
-        courier_route = list(map(int, re.search(r"courier_route = \[(.*?)\];", desired_output).group(1).split(", ")))
+        route_m = list(map(int, re.search(r"route_m = \[(.*?)\];", desired_output).group(1).split(", ")))
     
-        return successor, predecessor, courier_route
+        return successor, predecessor, route_m
     except Exception as e :
         return None,None,None
 
-def process_courier_routes(successor, predecessor, courier_route):
+def process_route_ms(successor, predecessor, route_m):
     try:
-        m = max(courier_route)
-        n = len(courier_route) - 2 * m
+        m = max(route_m)
+        n = len(route_m) - 2 * m
         couriers = {}
-        for i, courier in enumerate(courier_route):
+        for i, courier in enumerate(route_m):
             if courier not in couriers:
                 couriers[courier] = []
             couriers[courier].append(i + 1)
@@ -97,8 +97,8 @@ def process_courier_routes(successor, predecessor, courier_route):
 def save_solution(desired_output, instance_number, model_name, solver_name):
     try:
         #parse the solution
-        successor, predecessor, courier_route = parse_solution(desired_output)
-        sorted_paths = process_courier_routes(successor, predecessor, courier_route)
+        successor, predecessor, route_m = parse_solution(desired_output)
+        sorted_paths = process_route_ms(successor, predecessor, route_m)
         
         if  sorted_paths != None:
             
