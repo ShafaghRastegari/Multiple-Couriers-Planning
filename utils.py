@@ -15,7 +15,6 @@ def assign_items(courier_capacity, available_items, S, D, depot_idx):
 def calculate_upper_bound(m, n, L, S, D):
     depot_idx = n  
     available_items = list(range(n))  
-    print(available_items)
     upper_bounds = []
     
     for i in range(m):
@@ -26,29 +25,32 @@ def calculate_upper_bound(m, n, L, S, D):
         assigned_items, available_items = assign_items(
             L[i], available_items, S, D, depot_idx
         )
-        print(assigned_items)
+        
         if not assigned_items:
             continue  
         
         
         if len(assigned_items) == 1:
            
-            tsp_bound = 2*max(D[depot_idx][assigned_items[0]],  D[depot_idx][assigned_items[0]])
+            tsp_bound = D[depot_idx][assigned_items[0]]+  D[depot_idx][assigned_items[0]]
         else:
            
             tsp_bound = 0
             for item in assigned_items:
                 
-                tsp_bound += 2*max(D[depot_idx][item] , D[item][depot_idx])
+                tsp_bound += D[depot_idx][item] + D[item][depot_idx]
 
         
         upper_bounds.append(tsp_bound)
     
    
-    upper_bound_final = max(upper_bounds) if upper_bounds else 0
-    
-    
-    print(f"Final Upper Bound: {upper_bound_final})")
+    upper_bound_1 = max(upper_bounds) if upper_bounds else 0
+    print(f"first upper : {upper_bound_1}")
+    max_distances = [max(D[i][:-1]) for i in range(n)]
+    max_distances.sort()
+    upper_bound_2 = sum(max_distances[n-n//m:]) + max(D[n][j] + D[j][n] for j in range(n))
+    print(f"second upper : {upper_bound_2}")
+    upper_bound_final = min(upper_bound_1, upper_bound_2)
     return upper_bound_final
 
 

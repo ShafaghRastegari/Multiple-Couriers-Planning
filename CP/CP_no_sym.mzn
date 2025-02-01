@@ -56,8 +56,8 @@ constraint forall(i in START_NODES)(courier_route[i] = i - n);
 constraint forall(i in END_NODES)(courier_route[i] = i - n - m);
 
 %successor / predecessor consistency constraint 
-constraint forall(i in NODES) ((successor[predecessor[i]] == i) /\ (predecessor[successor[i]] == i));
-
+constraint forall(i in NODES) (successor[predecessor[i]] == i);
+constraint forall(i in NODES) (predecessor[successor[i]] == i);
 constraint forall(i in ITEMS)(courier_route[successor[i]] = courier_route[i]);
 constraint forall(i in ITEMS)(courier_route[predecessor[i]] = courier_route[i]);
 
@@ -69,19 +69,10 @@ constraint circuit(successor);
 %distance travelled till each location 
 % Initialize starting node of each route 
 constraint forall(d in START_NODES)(final_dist[d] = 0);
-
-
-constraint forall(d in ITEMS where successor[d] in ITEMS)(
-    final_dist[successor[d]] = final_dist[d] + D[d,successor[d]]  
-);
-
-constraint forall(d in ITEMS where successor[d] in END_NODES)(
-    final_dist[successor[d]] = final_dist[d] + D[d,n+1]  
-);
-
-constraint forall(d in START_NODES)(
-    final_dist[successor[d]] = D[n+1, successor[d]]
-);
+constraint forall(d in ITEMS where successor[d] in ITEMS)(final_dist[successor[d]] = final_dist[d] + D[d,successor[d]]);
+constraint forall(d in ITEMS where successor[d] in END_NODES)(final_dist[successor[d]] = final_dist[d] + D[d,n+1]);
+constraint forall(d in START_NODES where successor[d] in ITEMS)(final_dist[successor[d]] = D[n+1, successor[d]]);
+constraint forall(d in START_NODES where successor[d] in END_NODES)(final_dist[successor[d]] = 0);
 
 %load and weight constraints 
 constraint forall(i in START_NODES)(load[i] = 0);

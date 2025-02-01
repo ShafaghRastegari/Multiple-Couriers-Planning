@@ -114,31 +114,48 @@ def save_solution(desired_output, instance_number, model_name, solver_name):
             #prepare the solution in the required format
             sol_list = [processed_sol[courier] for courier in sorted(processed_sol.keys())]
 
-            #extract initTime, solveTime, obj, optimal
+            # Try to match initTime, solveTime, obj, and optimal
             init_time_match = re.search(r"%%%mzn-stat:\s*initTime=([\d.]+)", desired_output)
             solve_time_match = re.search(r"%%%mzn-stat:\s*solveTime=([\d.]+)", desired_output)
             obj_match = re.search(r"obj\s*=\s*(\d+);", desired_output)
-            optimal_value = re.search(r'optimal = (\w+)', desired_output).group(1)
+            optimal_match = re.search(r'optimal\s*=\s*(\w+)', desired_output)
 
+            # Default/fallback values
+            init_time = 0.0
+            solve_time = 0.0
+            obj = "No object"
+            is_optimal = False
 
-            init_time = float(init_time_match.group(1))  #in milliseconds
-            solve_time = float(solve_time_match.group(1))  #in milliseconds
-            obj = int(obj_match.group(1))
+            # If 'optimal' was found, parse it
+            if optimal_match:
+                is_optimal = (optimal_match.group(1).lower() == 'true')
 
-            total_time = init_time + solve_time  # in milliseconds
+            # If we have numeric matches for init/solve times, parse them
+            if init_time_match:
+                init_time = float(init_time_match.group(1))
+            if solve_time_match:
+                solve_time = float(solve_time_match.group(1))
 
-            if optimal_value == "true":
-                time_sec = math.floor(total_time / 1000)  # convert to seconds and floor
+            # If we found an objective, parse it
+            if obj_match:
+                obj = int(obj_match.group(1))
+
+            # Compute total time in ms
+            total_time_ms = init_time + solve_time
+
+            # If it is optimal, convert total time to seconds (floor); otherwise fallback to 300
+            if is_optimal:
+                time_sec = math.floor(total_time_ms / 1000)
             else:
                 time_sec = 300
 
-            #create the result dictionary
+            # new_result then uses time_sec, is_optimal, obj, sol_list, etc.
             new_result = {
                 f"{model_name}_{solver_name}": {
                     "time": time_sec,
-                    "optimal": [True if optimal_value == "true" else False][0] ,
-                    "obj": obj if obj else "No object",
-                    "sol": sol_list if sol_list else "No Solutions"
+                    "optimal": is_optimal,
+                    "obj": obj,
+                    "sol": sol_list
                 }
             }
         else:
