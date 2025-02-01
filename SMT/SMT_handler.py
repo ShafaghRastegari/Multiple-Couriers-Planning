@@ -73,6 +73,3 @@ def SMT_handler(num_instance):
         print("finished")
     with open(f'./res/SMT/{instance_num+1}.json', 'w') as f:
       json.dump(final_result_dict, f, indent=1)
-
-# if __name__ == "__main__":
-#   SMT_handler(num_instance=2, model="SMT_SYM")
