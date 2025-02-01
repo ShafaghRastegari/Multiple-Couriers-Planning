@@ -146,7 +146,7 @@ def linear_search(solver, instance, variables, timeout, shared_list, implied_con
     else:
         t = [[model.evaluate(t[j][k]) for k in range(n)] for j in range(n)]
     dist = [[model.evaluate(distances[i][b]) for b in range(max_Distance_Binary)] for i in range(m)]
-    distances, tot_s = display(t, dist, objective_value, a)
+    distances, tot_s = display(t, dist, objective_value, a, False)
     distances, tot_s = instance.invert_sort_weight(distances, tot_s)
     current_time = T.time()
     past_time = current_time - start_time
@@ -260,7 +260,7 @@ def binary_search(solver, instance, variables, timeout, shared_list, implied_con
     else:
         t = [[model.evaluate(t[j][k]) for k in range(n)] for j in range(n)]
     dist = [[model.evaluate(distances[i][b]) for b in range(max_Distance_Binary)] for i in range(m)]
-    distances, tot_s = display(t, dist, objective_value, a)
+    distances, tot_s = display(t, dist, objective_value, a, False)
     distances, tot_s = instance.invert_sort_weight(distances, tot_s)
     current_time = T.time()
     past_time = current_time - start_time
@@ -335,19 +335,21 @@ def constraints(instance, solver, sym_breaking, implied_constraint):
     # Constraint 5
     for i in range(m):
         # can't leave from j to go to j
-        solver.add(And([Not(x[i][j][j]) for j in range(n + 1)]))
+        solver.add(And([Not(x[i][j][j]) for j in range(n)]))
+        
         if implied_constraint:
-            solver.add(Not(x[i][n][n]))     # don't let courier i have a self loop
+            solver.add(Not(x[i][n][n])) 
         # row j has a 1 iff courier i delivers item j
         for j in range(n):
             solver.add(Implies(a[i][j], exactly_one(x[i][j], f"courier_{i}_leaves_{j}")))
             solver.add(Implies(Not(a[i][j]), allfalse(x[i][j])))
-        solver.add(exactly_one(x[i][n], f"courier_{i}_leaves_origin")) # courier i leaves from origin
 
         # column j has a 1 iff courier i delivers object j
         for k in range(n):
             solver.add(Implies(a[i][k], exactly_one([x[i][j][k] for j in range(n + 1)], f"courier_{i}_reaches_{k}")))
             solver.add(Implies(Not(a[i][k]), allfalse([x[i][j][k] for j in range(n + 1)])))
+            
+        solver.add(exactly_one(x[i][n], f"courier_{i}_leaves_origin")) # courier i leaves from origin
         solver.add(exactly_one([x[i][j][n] for j in range(n + 1)], f"courier_{i}_returns_to_origin")) #courier i returns to origin
 
         # use ordering between t_j and t_k in every edge travelled

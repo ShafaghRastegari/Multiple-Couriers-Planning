@@ -75,8 +75,8 @@ def SAT_function(num_instance):
                             time, optimal, obj, sol = 300, False, "N/A", []
                         else:
                             time, optimal, obj, sol, distances = shared_list[-1]
-
-                            if optimal_flag:
+                            show = False
+                            if optimal_flag and show:
                                 time = 300
                                 optimal = False
                                 print(f"-----------Objective value: {obj}-----------")
