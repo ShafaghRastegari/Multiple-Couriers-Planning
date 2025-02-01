@@ -13,6 +13,76 @@
             ]
         ]
     },
+    "CPF_sym_gecode": {
+        "time": 0,
+        "optimal": true,
+        "obj": 206,
+        "sol": [
+            [
+                2
+            ],
+            [
+                1,
+                3
+            ]
+        ]
+    },
+    "CPF_sym_chuffed": {
+        "time": 0,
+        "optimal": true,
+        "obj": 206,
+        "sol": [
+            [
+                2
+            ],
+            [
+                1,
+                3
+            ]
+        ]
+    },
+    "CPF_no_sym_gecode": {
+        "time": 0,
+        "optimal": true,
+        "obj": 206,
+        "sol": [
+            [
+                2
+            ],
+            [
+                1,
+                3
+            ]
+        ]
+    },
+    "CPF_no_sym_chuffed": {
+        "time": 0,
+        "optimal": true,
+        "obj": 206,
+        "sol": [
+            [
+                2
+            ],
+            [
+                1,
+                3
+            ]
+        ]
+    },
+    "CP_sym_chuffed": {
+        "time": 0,
+        "optimal": true,
+        "obj": 206,
+        "sol": [
+            [
+                2
+            ],
+            [
+                1,
+                3
+            ]
+        ]
+    },
     "CP_no_sym_gecode": {
         "time": 0,
         "optimal": true,
@@ -28,20 +98,6 @@
         ]
     },
     "CP_no_sym_chuffed": {
-        "time": 0,
-        "optimal": true,
-        "obj": 206,
-        "sol": [
-            [
-                2
-            ],
-            [
-                1,
-                3
-            ]
-        ]
-    },
-    "CP_sym_chuffed": {
         "time": 0,
         "optimal": true,
         "obj": 206,

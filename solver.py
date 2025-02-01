@@ -38,7 +38,7 @@ def main():
 
             # Call the solver's run function
             if hasattr(solver_module, "run_minizinc"):
-                solver_module.run_minizinc(args.model, args.instance, args.solver)
+                solver_module.run_minizinc(args.model, args.num_instance, args.solver)
             else:
                 print(f"Error: Solver module for method '{args.approach}' does not have a 'run_minizinc' function.")
 

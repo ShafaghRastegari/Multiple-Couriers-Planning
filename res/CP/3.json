@@ -5,13 +5,13 @@
         "obj": 12,
         "sol": [
             [
-                3,
-                6,
-                5
+                5,
+                4,
+                2
             ],
             [
-                2,
-                4
+                3,
+                6
             ],
             [
                 1,
@@ -19,7 +19,7 @@
             ]
         ]
     },
-    "CP_no_sym_gecode": {
+    "CPF_sym_gecode": {
         "time": 0,
         "optimal": true,
         "obj": 12,
@@ -39,7 +39,47 @@
             ]
         ]
     },
-    "CP_no_sym_chuffed": {
+    "CPF_sym_chuffed": {
+        "time": 0,
+        "optimal": true,
+        "obj": 12,
+        "sol": [
+            [
+                3,
+                6,
+                5
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                1,
+                7
+            ]
+        ]
+    },
+    "CPF_no_sym_gecode": {
+        "time": 0,
+        "optimal": true,
+        "obj": 12,
+        "sol": [
+            [
+                3,
+                6,
+                5
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                1,
+                7
+            ]
+        ]
+    },
+    "CPF_no_sym_chuffed": {
         "time": 0,
         "optimal": true,
         "obj": 12,
@@ -65,17 +105,57 @@
         "obj": 12,
         "sol": [
             [
-                3,
-                6,
-                5
+                5,
+                4,
+                2
             ],
             [
-                2,
-                4
+                3,
+                7
+            ],
+            [
+                1,
+                6
+            ]
+        ]
+    },
+    "CP_no_sym_gecode": {
+        "time": 0,
+        "optimal": true,
+        "obj": 12,
+        "sol": [
+            [
+                5,
+                4,
+                2
+            ],
+            [
+                3,
+                6
             ],
             [
                 1,
                 7
+            ]
+        ]
+    },
+    "CP_no_sym_chuffed": {
+        "time": 0,
+        "optimal": true,
+        "obj": 12,
+        "sol": [
+            [
+                5,
+                4,
+                2
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                1,
+                6
             ]
         ]
     }

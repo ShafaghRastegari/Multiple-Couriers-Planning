@@ -51,6 +51,8 @@ constraint forall(i in n + m + 1..n + 2 * m - 1)(successor[i] = i - m + 1);
 constraint successor[n + 2 * m] = n + 1;
 constraint forall(i in n + 2..n + m)(predecessor[i] = i + m - 1);
 constraint predecessor[n + 1] = n + 2 * m;
+constraint forall(s in START_NODES)(not (successor[s] in END_NODES));
+
 % assign each start->end nodes with a courier
 constraint forall(i in START_NODES)(courier_route[i] = i - n);
 constraint forall(i in END_NODES)(courier_route[i] = i - n - m);
@@ -83,9 +85,9 @@ constraint forall(i in COURIERS)(load[i + n + m] <= L[i]);
 
 %Symmetry-breaking constraint
 
-constraint forall(i, j in COURIERS where i < j)(
-   (L[i] = L[j]) -> successor[n + i] < successor[n + j]
-);
+%constraint forall(i, j in COURIERS where i < j)(
+%   (L[i] = L[j]) -> successor[n + i] < successor[n + j]
+%);
 /******************************************************************************
  *                              search and solve                                  *
  ******************************************************************************/
