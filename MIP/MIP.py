@@ -89,8 +89,8 @@ def solve_and_save(shared_list, m, n, L, S, D, solver):
 
 def run_model(num_instance):
     if num_instance == 0:
-        start = 10
-        end = 21
+        start = 7
+        end = 10
     else:
         start = num_instance - 1
         end = num_instance

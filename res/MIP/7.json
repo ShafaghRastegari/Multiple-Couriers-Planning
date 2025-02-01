@@ -1,9 +1,39 @@
 {
     "PULP_CBC_CMD": {
-        "time": 300,
-        "optimal": false,
-        "obj": "N/A",
-        "sol": []
+        "time": 166,
+        "optimal": true,
+        "obj": 167,
+        "sol": [
+            [
+                5,
+                17
+            ],
+            [
+                8,
+                14,
+                16
+            ],
+            [
+                15,
+                6,
+                7,
+                13,
+                12
+            ],
+            [
+                9,
+                2
+            ],
+            [
+                4,
+                11
+            ],
+            [
+                10,
+                3,
+                1
+            ]
+        ]
     },
     "GUROBI": {
         "time": 1,
@@ -42,7 +72,7 @@
         ]
     },
     "HiGHS": {
-        "time": 28,
+        "time": 16,
         "optimal": true,
         "obj": 167,
         "sol": [
