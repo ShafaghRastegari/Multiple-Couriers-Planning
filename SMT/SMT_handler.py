@@ -7,16 +7,16 @@ from SMT.utils import *
 from SMT.SMT_Z3 import *
 
 models = [ "SMT",
-          # "SMT_SYM",
+          "SMT_SYM",
           "SMT_IMP",
-          # "SMT_SYM_IMP"
+          "SMT_SYM_IMP"
           ]
 
 def SMT_handler(num_instance):
 
   if num_instance == 0:
-    start = 0
-    end = 10
+    start = 17
+    end = 21
   else:
     start = num_instance - 1
     end = num_instance
@@ -34,7 +34,7 @@ def SMT_handler(num_instance):
       with multiprocessing.Manager() as manager:
         shared_list = manager.list()
         # Create a Process to run the target function
-        process = multiprocessing.Process(target=SMT,
+        process = multiprocessing.Process(target=SMT_Solver,
                                         args=(shared_list,
                                               *run_model_on_instance((f"./Instances/inst0{instance_num+1}.dat"
                                                 if instance_num < 9 else f"./Instances/inst{instance_num+1}.dat")), sym, imp))

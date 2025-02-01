@@ -4,6 +4,7 @@ import sys
 import os
 from SMT.SMT_handler import SMT_handler
 from SAT.SAT_handler import SAT_function
+from MIP.MIP import run_model
 
 def main():
     # Add the project directory to sys.path
@@ -24,7 +25,7 @@ def main():
     args = parser.parse_args()
 
     # Debug: Print the current working directory
-    print(f"Current working directory: {os.getcwd()}")
+    #print(f"Current working directory: {os.getcwd()}")
 
  
 
@@ -54,7 +55,7 @@ def main():
         SMT_handler(num_instance=args.num_instance)
 
     elif args.approach.lower() == "mip":
-        pass
+        run_model(num_instance=args.num_instance)
 
     else:
         raise argparse.ArgumentError(None, "Please select a solver between CP, SAT, SMT and MIP")
