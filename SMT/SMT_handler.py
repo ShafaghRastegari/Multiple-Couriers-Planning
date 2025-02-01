@@ -15,8 +15,8 @@ models = [ "SMT",
 def SMT_handler(num_instance):
 
   if num_instance == 0:
-    start = 0
-    end = 10
+    start = 17
+    end = 21
   else:
     start = num_instance - 1
     end = num_instance
