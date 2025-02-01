@@ -5,18 +5,7 @@ def solve_mip(m, n, L, S, D):
     
     model = LpProblem("Multiple_Couriers_Planning", LpMinimize)
     
-    num_couriers = m  # Couriers
-    N = n  # Items
-    N0 = n + 1  # Items + depot
-    
-    origin = len(D[1])
-    num_cities = len(D[1])-1 #except depot
-    
     # Decision Variables
-    """
-    Xijk = 1 If there is a path
-         = 0 If there is not a path
-    """
     x = LpVariable.dicts("x", (range(m), range(n+1), range(n+1)), cat='Binary')
     a = LpVariable.dicts("a", (range(m), range(n)), cat="Binary")
     t = LpVariable.dicts("t", (range(m), range(n)), lowBound=0, upBound=n, cat="Integer")
@@ -29,12 +18,12 @@ def solve_mip(m, n, L, S, D):
     
     courier_weights = [
         LpVariable(name=f'weight_{i}', lowBound=0, upBound=L[i], cat="Integer")
-        for i in range(num_couriers)
+        for i in range(m)
     ]
     
     courier_distance = [
         LpVariable(name=f'obj_dist{i}', cat="Integer", lowBound=0, upBound=upper_bound)
-        for i in range(num_couriers)
+        for i in range(m)
     ]
     
     # Objective Function
