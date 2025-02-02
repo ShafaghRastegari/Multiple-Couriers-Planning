@@ -45,11 +45,11 @@ def calculate_upper_bound(m, n, L, S, D):
     
    
     upper_bound_1 = max(upper_bounds) if upper_bounds else 0
-    print(f"first upper : {upper_bound_1}")
+    #print(f"first upper : {upper_bound_1}")
     max_distances = [max(D[i][:-1]) for i in range(n)]
     max_distances.sort()
     upper_bound_2 = sum(max_distances[n-n//m:]) + max(D[n][j] + D[j][n] for j in range(n))
-    print(f"second upper : {upper_bound_2}")
+    #print(f"second upper : {upper_bound_2}")
     upper_bound_final = min(upper_bound_1, upper_bound_2)
     return upper_bound_final
 

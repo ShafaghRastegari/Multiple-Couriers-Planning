@@ -145,7 +145,7 @@ def save_solution(desired_output, instance_number, model_name, solver_name):
 
             # If it is optimal, convert total time to seconds (floor); otherwise fallback to 300
             if is_optimal:
-                time_sec = math.floor(total_time_ms / 1000)
+                time_sec = math.floor(total_time_ms)
             else:
                 time_sec = 300
 
