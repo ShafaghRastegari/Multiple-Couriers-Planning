@@ -37,26 +37,32 @@ python solver.py -a <approach> -s <solver> -m <model_name> -n <number_instances>
 
 You can run the CP approach by using this command:
 ```bash
-python solver.py -a CP -s <solver> -n <number_instances>
+python solver.py -a <approach> -s <solver> -n <number_instances>
 ```
-- `<solver>`: Use one of the following:
+- `<approach>`: Use one of these models:
 
-    - `CP_sym_gecode`: CP model with gecode solver, using symmetry breaking.
-    - `CP_sym_chuffed`: CP model with chuffed solver, using symmetry breaking.
-    - `CP_no_sym_gecode`: CP model with gecode solver, without symmetry breaking.
-    - `CP_no_sym_chuffed`: CP model withchuffed solver, without symmetry breaking.
-    - `CPF_sym_gecode`: CPF model with gecode solver, using symmetry breaking.
-    - `CPF_sym_chuffed`: CPF model with chuffed solver, using symmetry breaking.
-    - `CPF_no_sym_gecode`: CPF model with gecode solver, without symmetry breaking.
-    - `CPF_no_sym_chuffed`: CPF model with chuffed solver, without symmetry breaking.
+    - `CP`: CP model.
+    - `CPF`: CPF model.
+
+- `<solver>`: Use one of these solvers:
+
+    - `gecode`: for using gecode solver.
+    - `chuffed`: for using chuffed solver.
+
+- `<model_name>`: use one of the following:
+
+    - `CP_sym_`: CP model with symmetry breaking.
+    - `CP_no_sym`: CP model without symmetry breaking.
+    - `CPF_sym`: CPF model with symmetry breaking.
+    - `CPF_no_sym`: CPF model without symmetry breaking.
 
 - `<number_instances>`: Use 0 to run all 21 instances, otherwise specify the number of instance that you want.
 
 **Example**
 
-Let's run instance 1 with `CP_sym_gecode` solver:
+Let's run instance 1 with `CP` model and `gecode` solver, with symmetry breaking `CP_sym`:
 ```bash
-python solver.py -a CP -s CP_sym_gecode -n 1
+python solver.py -a CP -s gecode -m CP_sym -n 1
 ```
 
 ## Run SAT Project
