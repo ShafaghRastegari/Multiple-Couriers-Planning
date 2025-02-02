@@ -32,7 +32,8 @@ def solve_model(model, m, n, x, max_distance, solver):
             while True:
                 next_point = None
                 for j in range(n+1):
-                    if value(x[k][j][current]) > 0.9:
+                    if value(x[k][current][j]) > 0.9:
+                        
                         next_point = j
                         break
                 if next_point is None or next_point == n:

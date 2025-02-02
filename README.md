@@ -8,6 +8,7 @@ The goal of this project is to model and solve the MCP problem using 4 approache
 
 ## Table of Contents
 - [Run the project](#How-to-Run-the-Project)
+    - [Run Project with All Models on All Instances](#run-project-with-all-models-on-all-instances)
     - [Run CP project](#run-cp-project)
     - [Run SAT project](#run-sat-project)
     - [Run SMT project](#run-smt-project)
@@ -33,22 +34,27 @@ docker run -it --rm cdmo
 
 In order to mount your PC folders with the container to have the result in your PC folder not in the container you can run the command in below instead of the previous one:
 
-##### On macOS
+##### **On macOS**
 
-```bash Model
+Use the following command in the project directory.
+
+```bash
 docker run -it -v $(pwd)/res:/app/res -v $(pwd)/CP/data:/app/CP data cdmo
 ```
 
-##### On Windows Command Prompt (cmd.exe)
+##### **On Windows Command Prompt (cmd.exe)**
 
-```bash m
+Use the following command in the project directory.
+
+```bash 
 docker run -it -v "<project_location>/res:/app/res" -v "<project_location>/Instances:/app/Instances" cdmo
 ```
 - `<project_location>`: Replce this with the location of the project your PC.
 
 **Example** 😃
 
-Let's run the project with mounting the folders if this project is clone in "F:/UNIBO" so the finale location of the project is "F:/UNIBO/Multiple-Couriers-Planning":
+Let's run the project with mounting the folders if this project is in "F:/UNIBO/Multiple-Couriers-Planning":
+
 ```bash
 docker run -it -v "F:/UNIBO/Multiple-Couriers-Planning/res:/app/res" -v "F:/UNIBO/Multiple-Couriers-Planning/Instances:/app/Instances" cdmo
 ```
@@ -61,10 +67,18 @@ Now you have access to run the project using following commands.
 python solver.py -a <approach> -s <solver> -m <model_name> -n <number_instances>
 ```
 
-- `<approach>`: Solver method (e.g., CP, SAT, SMT, MIP).
+- `<approach>`: Solver method (e.g., CP, SAT, SMT, MIP, all).
 - `<solver>`: Solver to use (e.g., gecode for CP).
 - `<model_name>`: Name of the model file (without extension).
 - `<number_instances>`: Instance number to run (0 for all instances).
+
+## Run Project with All Models on All Instances
+
+You can easily do this by following command:
+
+```bash
+python solver.py -a all -n 0
+```
 
 ## Run CP Project
 

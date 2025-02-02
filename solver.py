@@ -8,14 +8,14 @@ from MIP.MIP import run_model
 
 def main():
     commands = [
-    "python solver.py -a CP -s gecode -m CP_sym -n 0",
-    "python solver.py -a CP -s gecode -m CP_no_sym -n 0",
     "python solver.py -a CP -s gecode -m CPF_sym -n 0",
     "python solver.py -a CP -s gecode -m CPF_no_sym -n 0",
-    "python solver.py -a CP -s chuffed -m CP_sym -n 0",
-    "python solver.py -a CP -s chuffed -m CP_no_sym -n 0",
     "python solver.py -a CP -s chuffed -m CPF_sym -n 0",
     "python solver.py -a CP -s chuffed -m CPF_no_sym -n 0",
+    "python solver.py -a CP -s gecode -m CP_sym -n 0",
+    "python solver.py -a CP -s gecode -m CP_no_sym -n 0",
+    "python solver.py -a CP -s chuffed -m CP_sym -n 0",
+    "python solver.py -a CP -s chuffed -m CP_no_sym -n 0",
     ]
     # Add the project directory to sys.path
     project_dir = os.path.dirname(os.path.abspath(__file__))
