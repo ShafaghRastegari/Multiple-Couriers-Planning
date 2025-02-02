@@ -6,6 +6,12 @@ The goal of this project is to model and solve the MCP problem using 4 approache
 3. Satisfiability Modulo Theories (SMT)
 4. Mixed-Integer Linear Programming (MIP)
 
+## Table of Contents
+- [Run the project](#How-to-Run-the-Project)
+    - [Run CP project](#run-cp-project)
+    - [Run SAT project](#run-sat-project)
+    - [Run SMT project](#run-smt-project)
+    - [Run MIP project](#run-mip-project)
 
 # How to Run the Project
 #### 1. Open terminal in the root of the project.
