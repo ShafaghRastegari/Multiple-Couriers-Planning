@@ -14,7 +14,7 @@ def read_mcp_instance(filename):
         loads = list(map(int, f.readline().split()))
         sizes = list(map(int, f.readline().split()))
         distances = []
-        for _ in range(n + 1):  # n items + origin point
+        for _ in range(n + 1):
             row = list(map(int, f.readline().split()))
             distances.append(row)
             
@@ -34,15 +34,14 @@ def solve_model(model, m, n, x, max_distance, solver):
                 for j in range(n+1):
                     if value(x[k][j][current]) > 0.9:
                         next_point = j
-                        break  # Exit the loop once a valid `next_point` is found
-                if next_point is None or next_point == n:  # Back to depot or no next point
-                    #route.append("Depot")  # Mark depot explicitly
+                        break
+                if next_point is None or next_point == n:
                     break
                 else:
-                    route.append(next_point + 1)  # Convert item indices to 1-based
+                    route.append(next_point + 1)
                     current = next_point
 
-            if route:  # Only include routes that are used
+            if route:
                 routes[k] = route
         return {
             'time': int(model.solutionTime),
@@ -89,8 +88,11 @@ def solve_and_save(shared_list, m, n, L, S, D, solver):
 
 def run_model(num_instance):
     if num_instance == 0:
-        start = 10
+        start = 0
         end = 21
+    elif num_instance == -1:
+        start = 0
+        end = 10
     else:
         start = num_instance - 1
         end = num_instance
