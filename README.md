@@ -74,7 +74,7 @@ python solver.py -a <approach> -s <solver> -m <model_name> -n <number_instances>
 
 ## Run Project with All Models on All/Specific instance
 
-You can generate all reported results withing our tables easily  by following command:
+You can generate all reported results within our tables easily  by following command:
 
 ```bash
 python solver.py -a all -n 0
