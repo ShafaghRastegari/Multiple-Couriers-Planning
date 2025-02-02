@@ -7,6 +7,16 @@ from SAT.SAT_handler import SAT_function
 from MIP.MIP import run_model
 
 def main():
+    commands = [
+    "python solver.py -a CP -s gecode -m CP_sym -n 0",
+    "python solver.py -a CP -s gecode -m CP_no_sym -n 0",
+    "python solver.py -a CP -s gecode -m CPF_sym -n 0",
+    "python solver.py -a CP -s gecode -m CPF_no_sym -n 0",
+    "python solver.py -a CP -s chuffed -m CP_sym -n 0",
+    "python solver.py -a CP -s chuffed -m CP_no_sym -n 0",
+    "python solver.py -a CP -s chuffed -m CPF_sym -n 0",
+    "python solver.py -a CP -s chuffed -m CPF_no_sym -n 0",
+    ]
     # Add the project directory to sys.path
     project_dir = os.path.dirname(os.path.abspath(__file__))
     sys.path.append(project_dir)
@@ -56,7 +66,21 @@ def main():
 
     elif args.approach.lower() == "mip":
         run_model(num_instance=args.num_instance)
-
+    
+    elif args.approach.lower() == "all":
+        print("================CP Model=================")
+        for cmd in commands:
+            os.system(cmd)
+            
+        print("================SAT Model=================")
+        SAT_function(num_instance=args.num_instance)
+        
+        print("================SMT Model=================")
+        SMT_handler(num_instance=args.num_instance)
+        
+        print("================MIP Model=================")
+        run_model(num_instance=args.num_instance)
+        
     else:
         raise argparse.ArgumentError(None, "Please select a solver between CP, SAT, SMT and MIP")
 
