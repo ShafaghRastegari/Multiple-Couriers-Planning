@@ -27,7 +27,7 @@ docker build -t cdmo .
 ```bash
 docker run -it --rm cdmo
 ```
-#### Run Image Container with Mounting (ulternative for previous command)
+#### Run Image Container with Mounting (alternative for previous command)
 
 ⚠️**The commands in below is just the ulternative for the above command for running the container, so if you do not want to mount the folders skip this part and go to section [4](#4-in-order-to-run-each-approaches-you-have-to-run-the-solverpy-file-with-specific-arguments-as-follows)
 .**
@@ -72,9 +72,9 @@ python solver.py -a <approach> -s <solver> -m <model_name> -n <number_instances>
 - `<model_name>`: Name of the model file (without extension).
 - `<number_instances>`: Instance number to run (0 for all instances).
 
-## Run Project with All Models on All Instances
+## Run Project with All Models on All/Specific instance
 
-You can easily do this by following command:
+You can generate all reported results withing our tables easily  by following command:
 
 ```bash
 python solver.py -a all -n 0

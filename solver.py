@@ -7,16 +7,6 @@ from SAT.SAT_handler import SAT_function
 from MIP.MIP import run_model
 
 def main():
-    commands = [
-    "python solver.py -a CP -s gecode -m CPF_sym -n 0",
-    "python solver.py -a CP -s gecode -m CPF_no_sym -n 0",
-    "python solver.py -a CP -s chuffed -m CPF_sym -n 0",
-    "python solver.py -a CP -s chuffed -m CPF_no_sym -n 0",
-    "python solver.py -a CP -s gecode -m CP_sym -n 0",
-    "python solver.py -a CP -s gecode -m CP_no_sym -n 0",
-    "python solver.py -a CP -s chuffed -m CP_sym -n 0",
-    "python solver.py -a CP -s chuffed -m CP_no_sym -n 0",
-    ]
     # Add the project directory to sys.path
     project_dir = os.path.dirname(os.path.abspath(__file__))
     sys.path.append(project_dir)
@@ -34,13 +24,8 @@ def main():
     
     args = parser.parse_args()
 
-    # Debug: Print the current working directory
-    #print(f"Current working directory: {os.getcwd()}")
-
- 
-
     if args.approach.lower() == "cp":
-       # Debug: Print the import path
+        # Debug: Print the import path
         module_path = f"{args.approach}.{args.approach.lower()}_solver"
         print(f"Attempting to import module: {module_path}")
         # Dynamically import the appropriate solver module based on the method
@@ -68,8 +53,16 @@ def main():
         run_model(num_instance=args.num_instance)
     
     elif args.approach.lower() == "all":
+        
+        cp_commands = [
+            f"python solver.py -a CP -s gecode -m CPF_sym -n {args.num_instance}",
+            f"python solver.py -a CP -s gecode -m CPF_no_sym -n {args.num_instance}",
+            f"python solver.py -a CP -s chuffed -m CPF_sym -n {args.num_instance}",
+            f"python solver.py -a CP -s chuffed -m CPF_no_sym -n {args.num_instance}",
+            f"python solver.py -a CP -s gecode -m CP_sym -n {args.num_instance}"
+        ]
         print("================CP Model=================")
-        for cmd in commands:
+        for cmd in cp_commands:
             os.system(cmd)
             
         print("================SAT Model=================")
@@ -83,10 +76,6 @@ def main():
         
     else:
         raise argparse.ArgumentError(None, "Please select a solver between CP, SAT, SMT and MIP")
-
-
-
-
 
 if __name__ == "__main__":
     main()
