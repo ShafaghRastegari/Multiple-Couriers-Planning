@@ -8,21 +8,21 @@ The goal of this project is to model and solve the MCP problem using 4 approache
 
 
 # How to Run the Project
-1. Open terminal in the root of the project.
-2. Build Docker Image:
+#### 1. Open terminal in the root of the project.
+#### 2. Build Docker Image:
 
 ```bash
 docker build -t cdmo .
 ```
 
-3. Run the Docker Image:
+#### 3. Run the Docker Image:
 
 ```bash
 docker run -it --rm cdmo
 ```
 #### Run Image Container with Mounting
 
-**NOTE: The commands in below is just the ulternative for the above command for running the container, so please run one of these.**
+**NOTE: The commands in below is just the ulternative for the above command for running the container, so if you do not want to mount the folders skip this part and go to section 4.**
 
 In order to mount your PC folders with the container to have the result in your PC folder not in the container you can run the command in below instead of the previous one:
 
@@ -48,7 +48,7 @@ docker run -it -v "F:/UNIBO/Multiple-Couriers-Planning/res:/app/res" -v "F:/UNIB
 
 Now you have access to run the project using following commands.
 
-4. In order to run each approaches you have to run the `solver.py` file with specific arguments as follows:
+#### 4. In order to run each approaches you have to run the `solver.py` file with specific arguments as follows:
 
 ```bash
 python solver.py -a <approach> -s <solver> -m <model_name> -n <number_instances>
