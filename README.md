@@ -37,12 +37,8 @@ python solver.py -a <approach> -s <solver> -m <model_name> -n <number_instances>
 
 You can run the CP approach by using this command:
 ```bash
-python solver.py -a <approach> -s <solver> -n <number_instances>
+python solver.py -a CP -s <solver> -m <model_name> -n <number_instances>
 ```
-- `<approach>`: Use one of these models:
-
-    - `CP`: CP model.
-    - `CPF`: CPF model.
 
 - `<solver>`: Use one of these solvers:
 
@@ -51,7 +47,7 @@ python solver.py -a <approach> -s <solver> -n <number_instances>
 
 - `<model_name>`: use one of the following:
 
-    - `CP_sym_`: CP model with symmetry breaking.
+    - `CP_sym`: CP model with symmetry breaking.
     - `CP_no_sym`: CP model without symmetry breaking.
     - `CPF_sym`: CPF model with symmetry breaking.
     - `CPF_no_sym`: CPF model without symmetry breaking.
@@ -70,7 +66,7 @@ You can run the SAT approach by using this command:
 ```bash
 python solver.py -a MIP -n <number_instances>
 ```
-- `<number_instances>`: Use 0 to run all 21 instances, or -1 first 10 instances, otherwise specify the number of instance that you want.
+- `<number_instances>`: Use 0 to run all 21 instances, or -1 for first 10 instances, otherwise specify the number of instance that you want.
 
 **Example**
 
@@ -83,7 +79,7 @@ You can run the SMT approach by using this command:
 ```bash
 python solver.py -a SMT -n <number_instances>
 ```
-- `<number_instances>`: Use 0 to run all 21 instances, otherwise specify the number of instance that you want.
+- `<number_instances>`: Use 0 to run all 21 instances, or -1 for first 10 instances, otherwise specify the number of instance that you want.
 
 **Example**
 
