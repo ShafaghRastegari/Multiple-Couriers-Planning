@@ -42,7 +42,7 @@
         ]
     },
     "CPF_no_sym_gecode": {
-        "time": 0,
+        "time": 9,
         "optimal": true,
         "obj": 206,
         "sol": [

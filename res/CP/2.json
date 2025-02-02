@@ -191,7 +191,7 @@
         ]
     },
     "CP_no_sym_chuffed": {
-        "time": 0,
+        "time": 11,
         "optimal": true,
         "obj": 226,
         "sol": [

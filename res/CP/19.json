@@ -1,6 +1,6 @@
 {
     "CP_sym_gecode": {
-        "time": 0,
+        "time": 103,
         "optimal": true,
         "obj": 334,
         "sol": [
@@ -233,7 +233,7 @@
         ]
     },
     "CPF_sym_chuffed": {
-        "time": 0,
+        "time": 28,
         "optimal": true,
         "obj": 334,
         "sol": [
@@ -469,7 +469,7 @@
         ]
     },
     "CPF_no_sym_chuffed": {
-        "time": 0,
+        "time": 34,
         "optimal": true,
         "obj": 334,
         "sol": [
@@ -587,7 +587,7 @@
         ]
     },
     "CP_sym_chuffed": {
-        "time": 0,
+        "time": 79,
         "optimal": true,
         "obj": 334,
         "sol": [

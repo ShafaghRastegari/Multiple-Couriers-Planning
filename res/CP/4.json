@@ -193,21 +193,21 @@
     "CP_no_sym_gecode": {
         "time": 300,
         "optimal": false,
-        "obj": 390,
+        "obj": 380,
         "sol": [
             [
                 1,
                 2,
                 3,
                 4,
-                7
+                9
             ],
             [],
             [
                 5,
                 6,
+                7,
                 8,
-                9,
                 10
             ],
             [],
@@ -218,7 +218,7 @@
         ]
     },
     "CP_no_sym_chuffed": {
-        "time": 0,
+        "time": 137,
         "optimal": true,
         "obj": 220,
         "sol": [
