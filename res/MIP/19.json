@@ -6,7 +6,7 @@
         "sol": []
     },
     "GUROBI": {
-        "time": 114,
+        "time": 211,
         "optimal": true,
         "obj": 334,
         "sol": [

@@ -1,6 +1,6 @@
 {
     "PULP_CBC_CMD": {
-        "time": 166,
+        "time": 209,
         "optimal": true,
         "obj": 167,
         "sol": [
@@ -72,7 +72,7 @@
         ]
     },
     "HiGHS": {
-        "time": 16,
+        "time": 20,
         "optimal": true,
         "obj": 167,
         "sol": [
