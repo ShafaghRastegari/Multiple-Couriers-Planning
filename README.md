@@ -20,9 +20,10 @@ docker build -t cdmo .
 ```bash
 docker run -it --rm cdmo
 ```
-#### Run Image Container with Mounting
+#### Run Image Container with Mounting (ulternative for previous command)
 
-**NOTE: The commands in below is just the ulternative for the above command for running the container, so if you do not want to mount the folders skip this part and go to section 4.**
+⚠️**The commands in below is just the ulternative for the above command for running the container, so if you do not want to mount the folders skip this part and go to section [4](#4-in-order-to-run-each-approaches-you-have-to-run-the-solverpy-file-with-specific-arguments-as-follows)
+.**
 
 In order to mount your PC folders with the container to have the result in your PC folder not in the container you can run the command in below instead of the previous one:
 
@@ -39,7 +40,7 @@ docker run -it -v "<project_location>/res:/app/res" -v "<project_location>/Insta
 ```
 - `<project_location>`: Replce this with the location of the project your PC.
 
-**Example**
+**Example** 😃
 
 Let's run the project with mounting the folders if this project is clone in "F:/UNIBO" so the finale location of the project is "F:/UNIBO/Multiple-Couriers-Planning":
 ```bash
@@ -80,7 +81,7 @@ python solver.py -a CP -s <solver> -m <model_name> -n <number_instances>
 
 - `<number_instances>`: Use 0 to run all 21 instances, otherwise specify the number of instance that you want.
 
-**Example**
+**Example** 😃
 
 Let's run instance 1 with `CP` model and `gecode` solver, with symmetry breaking `CP_sym`:
 ```bash
@@ -94,7 +95,7 @@ python solver.py -a MIP -n <number_instances>
 ```
 - `<number_instances>`: Use 0 to run all 21 instances, or -1 for first 10 instances, otherwise specify the number of instance that you want.
 
-**Example**
+**Example** 😃
 
 Let's run instance 1:
 ```bash
@@ -107,7 +108,7 @@ python solver.py -a SMT -n <number_instances>
 ```
 - `<number_instances>`: Use 0 to run all 21 instances, or -1 for first 10 instances, otherwise specify the number of instance that you want.
 
-**Example**
+**Example** 😃
 
 Let's run instance 1:
 ```bash
@@ -127,7 +128,7 @@ It is run with these 3 solvers:
 - `<GUROBI>`: Commercial solver for Mixed Integer Programming.
 - `<HiGHS>`: High-performance solver for Mixed Integer Programming.
 
-**Example**
+**Example** 😃
 
 Let's run instance 1:
 ```bash
