@@ -20,6 +20,32 @@ docker build -t cdmo .
 ```bash
 docker run -it --rm cdmo
 ```
+#### Run Image Container with Mounting
+
+**NOTE: The commands in below is just the ulternative for the above command for running the container, so please run one of these.**
+
+In order to mount your PC folders with the container to have the result in your PC folder not in the container you can run the command in below instead of the previous one:
+
+##### On macOS
+
+```bash Model
+docker run -it -v $(pwd)/res:/app/res -v $(pwd)/CP/data:/app/CP data cdmo
+```
+
+##### On Windows Command Prompt (cmd.exe)
+
+```bash m
+docker run -it -v "<project_location>/res:/app/res" -v "<project_location>/Instances:/app/Instances" cdmo
+```
+- `<project_location>`: Replce this with the location of the project your PC.
+
+**Example**
+
+Let's run the project with mounting the folders if this project is clone in "F:/UNIBO" so the finale location of the project is "F:/UNIBO/Multiple-Couriers-Planning":
+```bash
+docker run -it -v "F:/UNIBO/Multiple-Couriers-Planning/res:/app/res" -v "F:/UNIBO/Multiple-Couriers-Planning/Instances:/app/Instances" cdmo
+```
+
 Now you have access to run the project using following commands.
 
 4. In order to run each approaches you have to run the `solver.py` file with specific arguments as follows:
@@ -93,7 +119,7 @@ You can run the MIP approach by using this command:
 ```bash
 python solver.py -a MIP -n <number_instances>
 ```
-- `<number_instances>`: Use 0 to run all 21 instances, otherwise specify the number of instance that you want.
+- `<number_instances>`: Use 0 to run all 21 instances, or -1 for first 10 instances, otherwise specify the number of instance that you want.
 
 It is run with these 3 solvers:
 
