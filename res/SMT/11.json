@@ -1,5 +1,23 @@
 {
- "null": {
+ "SMT": {
+  "time": 300,
+  "optimal": false,
+  "obj": null,
+  "sol": null
+ },
+ "SMT_SYM": {
+  "time": 300,
+  "optimal": false,
+  "obj": null,
+  "sol": null
+ },
+ "SMT_IMP": {
+  "time": 300,
+  "optimal": false,
+  "obj": null,
+  "sol": null
+ },
+ "SMT_SYM_IMP": {
   "time": 300,
   "optimal": false,
   "obj": null,

@@ -1,0 +1,20 @@
+{
+    "PULP_CBC_CMD": {
+        "time": 300,
+        "optimal": false,
+        "obj": "N/A",
+        "sol": []
+    },
+    "GUROBI": {
+        "time": 300,
+        "optimal": false,
+        "obj": "N/A",
+        "sol": []
+    },
+    "HiGHS": {
+        "time": 300,
+        "optimal": false,
+        "obj": "N/A",
+        "sol": []
+    }
+}
